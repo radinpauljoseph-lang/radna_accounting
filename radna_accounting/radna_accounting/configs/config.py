@@ -15,7 +15,11 @@ logger = logging.getLogger(__name__)
 
 ENV = os.environ['ENV']
 CONFIGS = configparser.ConfigParser()
-CONFIGS.read("C:\\radna_accounting\\radna_accounting\\radna_accounting\\configs\\config.ini")
+print("####")
+print(os.getcwd())
+# CONFIGS.read("C:\\radna_accounting\\radna_accounting\\radna_accounting\\configs\\config.ini")
+
+CONFIGS.read("./radna_accounting/radna_accounting/configs/config.ini")
 
 DB_CONNECTION = CONFIGS[f"{ENV}.database"]['connection_string']
 
