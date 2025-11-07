@@ -1,0 +1,13 @@
+pandas
+psycopg2
+requests
+django
+pydantic
+sqlalchemy
+pytest
+pytest-xdist
+pytest-html
+faker
+logging
+configparser
+assertpy
