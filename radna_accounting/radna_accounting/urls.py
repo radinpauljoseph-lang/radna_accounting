@@ -17,9 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from .views import chart_of_accounts
+from .views import (
+    chart_of_accounts,
+    journal_entry
+)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("accounts", chart_of_accounts.create_account_request),
-    path("accounts/<str:id>", chart_of_accounts.get_update_account_request)
+    path("accounts/<str:id>", chart_of_accounts.get_update_account_request),
+    path("journal-entry", journal_entry.create_journal_entry_request)
 ]

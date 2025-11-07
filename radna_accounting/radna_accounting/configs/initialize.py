@@ -6,6 +6,15 @@ from .config import (
 from ..models.chart_of_accounts import (
     chart_of_accounts
 )
+from ..models.journal_entry import (
+    journal_entry
+)
+from ..models.journal_entry_history import (
+    journal_entry_history
+)
+from ..models.accounting_periods import (
+    accounting_periods
+)
 from sqlalchemy import inspect
 logging.basicConfig(
     level=logging.INFO,
@@ -14,7 +23,10 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 table_definitions = [
-    chart_of_accounts.name
+    chart_of_accounts.name,
+    journal_entry.name,
+    journal_entry_history.name,
+    accounting_periods.name
 ]
 def initialize():
     inspector = inspect(engine)

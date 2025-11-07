@@ -35,6 +35,8 @@ class ChartOfAccountsModel(BaseModel):
             else:
                 if id is not None and not isinstance(id, UUID):
                     raise TypeError(error_message)
+        else:
+            values['id'] = None
         return values
 
 

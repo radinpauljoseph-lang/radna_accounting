@@ -1,4 +1,6 @@
 import copy
+import pandas as pd
+from pandas import DataFrame
 from sqlalchemy import text
 from ...configs.config  import (
     logger
@@ -41,6 +43,20 @@ def account_select_record(engine, column_name, value) -> dict:
     
     result = result.first()
     result = dict(result._mapping)
+    return result
+
+def account_select_all_account_records(engine) -> DataFrame:
+    validator = None
+    result = None
+    with engine.connect() as conn:
+        validator = chart_of_accounts\
+            .select()
+        result = conn.execute(validator).fetchall()
+
+        logger.info(f"account_select_all_account_records - SQL: {validator}")
+    
+    result = [dict(row._mapping) for row in result]
+    result = pd.DataFrame(result)
     return result
 
 def account_insert_record(engine, obj) -> None:
