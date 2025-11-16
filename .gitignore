@@ -1,3 +1,5 @@
 __pycache__
 .pytest_cache
 assets
+report.html
+temp_state.db
