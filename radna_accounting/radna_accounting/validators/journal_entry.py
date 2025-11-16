@@ -16,13 +16,13 @@ allowed_status = [
 ]
 class JournalEntryModel(BaseModel):
     id: str | UUID | None = None
-    transaction_id: str = ""
+    transaction_id: str | None = None
     transaction_date: str | datetime | None = None
-    account_number: str = ""
-    description: str = ""
-    entry_type: str = ""
-    amount: float = 0.0
-    currency_code: str = "PHP"
+    account_number: str | None = None
+    description: str | None = None
+    entry_type: str | None = None
+    amount: float | None = None
+    currency_code: str | None = None
     posting_date: str | datetime | None = None
     status: str | None = None
     created_date: str | datetime | None = None
@@ -48,23 +48,28 @@ class JournalEntryModel(BaseModel):
 
     @model_validator(mode="before")
     def transaction_id_validator(cls, values):
-        transaction_id = values['transaction_id']
-        if not isinstance(transaction_id, str):
-            raise TypeError(f"{model_name} Error: incorrect transaction ID data type \'{type(transaction_id).__name__}\'")
-        if len(transaction_id) <= 0:
-            raise ValueError(f"{model_name} Error: transaction ID minimum length is 1")
-        if len(transaction_id) > 30:
-            raise ValueError(f"{model_name} Error: transaction ID maximum length is 30")
-        if not re.search("^\d{4}\d{2}\-\d{5}\Z", transaction_id):
-            raise ValueError(f"{model_name} Error: transaction ID not in proper format")
+        if 'transaction_id' in values.keys():
+            transaction_id = values['transaction_id']
+            if transaction_id is not None and not isinstance(transaction_id, str):
+                raise TypeError(f"{model_name} Error: incorrect transaction ID data type \'{type(transaction_id).__name__}\'")
+            if transaction_id is not None and len(transaction_id) <= 0:
+                raise ValueError(f"{model_name} Error: transaction ID minimum length is 1")
+            if transaction_id is not None and len(transaction_id) > 30:
+                raise ValueError(f"{model_name} Error: transaction ID maximum length is 30")
+            if transaction_id is not None and not re.search("^\d{4}\d{2}\-\d{5}\Z", transaction_id):
+                raise ValueError(f"{model_name} Error: transaction ID not in proper format")
+            else:
+                if transaction_id is not None:
+                    year = transaction_id[:4]
+                    month = transaction_id[4:6]
+                    if int(year) < 1000  or int(year) > 9999:
+                        raise ValueError(f"{model_name} Error: year in transaction ID is not a valid year")
+                    if 1 > int(month)  or int(month) > 12:
+                        raise ValueError(f"{model_name} Error: year in transaction ID is not a valid month")
+                else:
+                    values['transaction_id'] = None
         else:
-            year = transaction_id[:4]
-            month = transaction_id[4:6]
-            # transaction_number = transaction_id[7:]
-            if int(year) < 1000  or int(year) > 9999:
-                raise ValueError(f"{model_name} Error: year in transaction ID is not a valid year")
-            if 1 > int(month)  or int(month) > 12:
-                raise ValueError(f"{model_name} Error: year in transaction ID is not a valid month")
+            values['transaction_id'] = None
         return values
     
     @model_validator(mode="before")
@@ -159,7 +164,7 @@ class JournalEntryModel(BaseModel):
     def status_validator(cls, values):
         if 'status' in values.keys():
             status = values['status']
-            if status not in allowed_status:
+            if not isinstance(status, type(None)) and status not in allowed_status:
                 raise ValueError(f"{model_name} Error: invalid status \'{status}\'")
         else:
             values['status'] = None

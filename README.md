@@ -1,18 +1,59 @@
-run virtual env: 
-    venv\Scripts\activate
-python manage.py runserver or
+# Project Setup, Running, and Testing Guide
+
+## 🔧 Activate Virtual Environment
+
+```bash
+venv\Scripts\activate
+```
+
+## 🚀 Run the Django Server
+
+Choose any of the commands below:
+
+```bash
+python manage.py runserver
+```
+
+Or specify the project directory:
+
+```bash
 python ./radna_accounting/manage.py runserver
+```
+
+Run on all network interfaces (useful for LAN/WiFi access):
+
+```bash
 python ./radna_accounting/manage.py runserver 0.0.0.0:8000
+```
 
+---
 
-run unit test:
-(venv) C:\radna_accounting\radna_accounting>pytest -v -o log_cli=true -o log_cli_level=INFO radna_accounting radna_accounting/test/unit
+## 🧪 Run Unit Tests
 
-sequential test:
-    pytest --html=report.html -v -o log_cli=true -o log_cli_level=INFO unit
-parallel test:
-    pytest --html=report.html -v -o log_cli=true -o log_cli_level=INFO -n 10 unit
+### Standard Test Execution
 
-delete pycache folders:
-    for /d /r %i in (.pytest_cache, __pycache__) do @if exist "%i" rmdir /s /q "%i"
-    
+```bash
+pytest -v -o log_cli=true -o log_cli_level=INFO radna_accounting radna_accounting/test/unit
+```
+
+### Sequential Tests (with HTML report)
+
+```bash
+pytest --html=report.html -v -o log_cli=true -o log_cli_level=INFO unit
+```
+
+### Parallel Tests (10 workers)
+
+```bash
+pytest --html=report.html -v -o log_cli=true -o log_cli_level=INFO -n 10 unit
+```
+
+---
+
+## 🧹 Clean Cache Files
+
+Delete all `__pycache__` and `.pytest_cache` folders on Windows:
+
+```bash
+for /d /r %i in (.pytest_cache, __pycache__) do @if exist "%i" rmdir /s /q "%i"
+```

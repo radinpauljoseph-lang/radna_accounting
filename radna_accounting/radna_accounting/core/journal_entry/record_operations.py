@@ -1,8 +1,9 @@
 import copy
 import uuid
 import pandas as pd
+from datetime import datetime
 from pandas import DataFrame
-from sqlalchemy import text, distinct
+from sqlalchemy import text, distinct, extract
 from ...configs.config  import (
     logger
 )
@@ -60,6 +61,54 @@ def je_select_multiple_record(engine, column_name, value) -> DataFrame:
     result = pd.DataFrame(result)
     return result
 
+def je_select_by_transaction_date_month_year_record(engine, month, year) -> DataFrame:
+    validator = None
+    result = None
+    with engine.connect() as conn:
+        validator = journal_entry\
+            .select()\
+            .where(
+                (extract('year', journal_entry.c.transaction_date) == year) &
+                (extract('month', journal_entry.c.transaction_date) == month)
+            )
+        result = conn.execute(validator).fetchall()
+
+        logger.info(f"je_select_by_transaction_date_month_year_record - SQL: {validator}")
+    
+    result = [dict(row._mapping) for row in result]
+    result = pd.DataFrame(result)
+    return result
+
+def je_select_by_transaction_id_record(engine, transaction_id) -> DataFrame:
+    validator = None
+    result = None
+    with engine.connect() as conn:
+        validator = journal_entry\
+            .select()\
+            .where(
+                journal_entry.c.transaction_id == transaction_id
+            )
+        result = conn.execute(validator).fetchall()
+
+        logger.info(f"je_select_by_transaction_id_record - SQL: {validator}")
+    
+    result = [dict(row._mapping) for row in result]
+    result = pd.DataFrame(result)
+    return result
+
+def je_delete_by_transaction_id_record(engine, transaction_id) -> None:
+    validator = None
+    with engine.connect() as conn:
+        validator = journal_entry\
+            .delete()\
+            .where(
+                journal_entry.c.transaction_id == transaction_id
+            )
+        conn.execute(validator)
+        conn.commit()
+
+        logger.info(f"je_delete_by_transaction_id_record - SQL: {validator}")
+
 def je_select_transaction_id_distinct_values(engine) -> DataFrame:
     validator = None
     result = None
@@ -102,6 +151,8 @@ def je_update_record(engine, je_id, obj) -> None:
         logger.info(f"je_update_record - Start Update Journal Entry Record: {je_id}")
         updated_record = copy.deepcopy(obj)
         updated_record = JournalEntryModel(**updated_record).model_dump()
+        history_record = copy.deepcopy(updated_record)
+        history_record['history_id'] = uuid.uuid4()
         
         update_statement = journal_entry\
             .update()\
@@ -115,5 +166,56 @@ def je_update_record(engine, je_id, obj) -> None:
         
         conn.execute(update_statement)
         conn.execute(history_insert_statement)
+        conn.commit()
+
+def je_update_to_post_record(engine, transaction_id) -> None:
+    with engine.connect() as conn:
+        logger.info(f"je_update_to_post_record - Start Update Journal Entry To POSTED status Record: {transaction_id}")
+        now = datetime.now().date()
+        # now = now.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(now.microsecond/1000):03d}"
+        update_statement = journal_entry\
+            .update()\
+            .where(journal_entry.c.transaction_id == transaction_id)\
+            .values(
+                status="POSTED",
+                posting_date=now,
+                updated_date=now
+            )
+        logger.info(f"je_update_to_post_record - Update Journal Entry To POSTED status Record: {transaction_id}")
+
+        # history_insert_statement =journal_entry_history\
+        #     .insert()\
+        #     .where(journal_entry.c.transaction_id == transaction_id)\
+        #     .values(status="POSTED")
+        
+        conn.execute(update_statement)
+        # conn.execute(history_insert_statement)
+        conn.commit()
+
+def je_update_to_post_by_month_year_record(engine, month, year) -> None:
+    with engine.connect() as conn:
+        logger.info(f"je_update_to_post_by_month_year_record - Start Update Journal Entry To POSTED status Record by {month}-{year}")
+        now = datetime.now()
+        now_datetime = now.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(now.microsecond/1000):03d}"
+        update_statement = journal_entry\
+            .update()\
+            .where(
+                (extract('year', journal_entry.c.transaction_date) == year) &
+                (extract('month', journal_entry.c.transaction_date) == month)
+            )\
+            .values(
+                status="POSTED",
+                posting_date=now.date(),
+                updated_date=now_datetime
+            )
+        logger.info(f"je_update_to_post_by_month_year_record - Update Journal Entry To POSTED status Record by {month}-{year}")
+
+        # history_insert_statement =journal_entry_history\
+        #     .insert()\
+        #     .where(journal_entry.c.transaction_id == transaction_id)\
+        #     .values(status="POSTED")
+        
+        conn.execute(update_statement)
+        # conn.execute(history_insert_statement)
         conn.commit()
 

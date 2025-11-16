@@ -19,7 +19,7 @@ journal_entry_history = Table(
         'id',
         UUID(as_uuid=True),
         primary_key=True,
-        unique=True,
+        unique=False,
         server_default=uuid_generator_keyword,  # uses pgcrypto
         default=sqlite_default  if schema_string is None else None
     ),

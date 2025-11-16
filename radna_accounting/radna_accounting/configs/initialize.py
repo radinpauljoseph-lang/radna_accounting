@@ -15,6 +15,9 @@ from ..models.journal_entry_history import (
 from ..models.accounting_periods import (
     accounting_periods
 )
+from ..models.transaction_id_tracker import (
+    transaction_id_tracker
+)
 from sqlalchemy import inspect
 logging.basicConfig(
     level=logging.INFO,
@@ -26,7 +29,8 @@ table_definitions = [
     chart_of_accounts.name,
     journal_entry.name,
     journal_entry_history.name,
-    accounting_periods.name
+    accounting_periods.name,
+    transaction_id_tracker.name
 ]
 def initialize():
     inspector = inspect(engine)
