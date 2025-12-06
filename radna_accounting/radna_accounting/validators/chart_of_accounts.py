@@ -13,7 +13,6 @@ account_types = [
 ]
 
 class ChartOfAccountsModel(BaseModel):
-    id: str | UUID | None = None
     account_id: str = ""
     name: str = ""
     type: str = ""
@@ -21,24 +20,6 @@ class ChartOfAccountsModel(BaseModel):
     account_mapping: str | None = None
     created_date: str | datetime | None = None
     updated_date: str | datetime | None = None
-
-    @model_validator(mode="before")
-    def id_validator(cls, values):
-        error_message = f"{model_name} Error: id field is not a valid UUID"
-        if 'id' in values.keys():
-            id = values['id']
-            if isinstance(id, str):
-                try:
-                    return uuid.UUID(id).version == 4
-                except (ValueError, TypeError):
-                    raise ValueError(error_message)
-            else:
-                if id is not None and not isinstance(id, UUID):
-                    raise TypeError(error_message)
-        else:
-            values['id'] = None
-        return values
-
 
     @model_validator(mode="before")
     def account_id_validator(cls, values):
@@ -56,8 +37,8 @@ class ChartOfAccountsModel(BaseModel):
         account_name = values['name']
         if not isinstance(account_name, str):
             raise TypeError(f"{model_name} Error: incorrect account name data type \'{type(account_name).__name__}\'")
-        if len(account_name) > 50:
-            raise ValueError(f"{model_name} Error: account name maximum length is 50")
+        if len(account_name) > 150:
+            raise ValueError(f"{model_name} Error: account name maximum length is 150")
         if len(account_name) <= 0:
             raise ValueError(f"{model_name} Error: account name minimum length is 1")
         return values
@@ -77,8 +58,8 @@ class ChartOfAccountsModel(BaseModel):
             account_description = values['description']
             if not isinstance(account_description, str) and account_description is not None:
                 raise TypeError(f"{model_name} Error: incorrect account description data type \'{type(account_description).__name__}\'")
-            if account_description is not None and len(account_description) > 50:
-                raise ValueError(f"{model_name} Error: account description field maximum length is 50")
+            if account_description is not None and len(account_description) > 300:
+                raise ValueError(f"{model_name} Error: account description field maximum length is 300")
         return values
     
     @model_validator(mode="before")
@@ -98,9 +79,7 @@ class ChartOfAccountsModel(BaseModel):
         if 'created_date' in values.keys():
             created_date = values['created_date']
             if created_date is not None:
-                if isinstance(created_date, datetime):
-                    values['created_date'] = created_date.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(created_date.microsecond / 1000):03d}"
-                else:
+                if isinstance(created_date, str):
                     values['created_date'] = datetime.strptime(created_date, "%Y-%m-%d %H:%M:%S.%f")
         return values
     
@@ -109,8 +88,6 @@ class ChartOfAccountsModel(BaseModel):
         if 'updated_date' in values.keys():
             updated_date = values['updated_date']
             if updated_date is not None:
-                if isinstance(updated_date, datetime):
-                    values['updated_date'] = updated_date.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(updated_date.microsecond / 1000):03d}"
-                else:
+                if isinstance(updated_date, str):
                     values['updated_date'] = datetime.strptime(updated_date, "%Y-%m-%d %H:%M:%S.%f")
         return values

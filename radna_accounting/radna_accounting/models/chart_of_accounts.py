@@ -15,30 +15,20 @@ sqlite_default=lambda: uuid.uuid4()
 chart_of_accounts = Table(
     "chart_of_accounts",
     meta,
-    Column(
-        'id',
-        UUID(as_uuid=True),
-        primary_key=True,
-        unique=True,
-        server_default=uuid_generator_keyword,  # uses pgcrypto
-        default=sqlite_default  if schema_string is None else None
-    ),
     Column('account_id', String(30), unique=True, nullable=False),
-    Column('name', String(50), unique=True, nullable=False),
+    Column('name', String(150), unique=True, nullable=False),
     Column('type', String(20), nullable=False),
-    Column('description', String(50), nullable=True),
+    Column('description', String(300), nullable=True),
     Column('account_mapping', String(30), nullable=True),
     Column(
         'created_date',
         DateTime,
-        nullable=False,
-        server_default=text("CURRENT_TIMESTAMP")  # auto-generate timestamp
+        nullable=False
     ),
     Column(
         'updated_date',
         DateTime,
-        nullable=False,
-        server_default=text("CURRENT_TIMESTAMP")  # auto-generate timestamp
+        nullable=False
     ),
     schema=schema_string
 )
