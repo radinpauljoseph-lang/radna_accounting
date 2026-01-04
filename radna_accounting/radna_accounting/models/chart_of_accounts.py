@@ -8,25 +8,37 @@ from ..configs.config import(
     meta
 )
 
+class ChartOfAccountTableMetaData:
+    def __init__(self):
+        self.TABLE_NAME = "chart_of_accounts"
+        self.ACCOUNT_ID = "account_id"
+        self.NAME = "name"
+        self.TYPE = "type"
+        self.DESCRIPTION = "description"
+        self.ACCOUNT_MAPPING ="account_mapping"
+        self.CREATED_DATE = "created_date"
+        self.UPDATED_DATE = "updated_date"
+
+coa_meta = ChartOfAccountTableMetaData()
 schema_string = CONFIGS[f"{ENV}.database"]['schema'] if CONFIGS[f"{ENV}.database"]['schema'] != 'null' else None
 uuid_generator_keyword = text("gen_random_uuid()") if schema_string is not None else None
 sqlite_default=lambda: uuid.uuid4()
 
 chart_of_accounts = Table(
-    "chart_of_accounts",
+    coa_meta.TABLE_NAME,
     meta,
-    Column('account_id', String(30), unique=True, nullable=False),
-    Column('name', String(150), unique=True, nullable=False),
-    Column('type', String(20), nullable=False),
-    Column('description', String(300), nullable=True),
-    Column('account_mapping', String(30), nullable=True),
+    Column(coa_meta.ACCOUNT_ID, String(30), unique=True, nullable=False),
+    Column(coa_meta.NAME, String(150), unique=True, nullable=False),
+    Column(coa_meta.TYPE, String(20), nullable=False),
+    Column(coa_meta.DESCRIPTION, String(300), nullable=True),
+    Column(coa_meta.ACCOUNT_MAPPING, String(30), nullable=True),
     Column(
-        'created_date',
+        coa_meta.CREATED_DATE,
         DateTime,
         nullable=False
     ),
     Column(
-        'updated_date',
+        coa_meta.UPDATED_DATE,
         DateTime,
         nullable=False
     ),
