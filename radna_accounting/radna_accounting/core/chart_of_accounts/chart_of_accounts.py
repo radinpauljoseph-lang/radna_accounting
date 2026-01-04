@@ -22,7 +22,7 @@ class ChartOfAccountsCore:
             logger.info(f"insertRecord - Start Insert Account Record {obj}")
             new_record = self.dto_model(**obj).model_dump()
             new_record['created_date'] = datetime.now()
-            new_record['updated_date'] = datetime.now()
+            new_record['updated_date'] = new_record['created_date']
 
             insert_statement = chart_of_accounts\
                 .insert()\
