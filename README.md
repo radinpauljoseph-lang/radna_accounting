@@ -55,5 +55,5 @@ pytest --html=report.html -v -o log_cli=true -o log_cli_level=INFO -n 10 radna_a
 Delete all `__pycache__` and `.pytest_cache` folders on Windows:
 
 ```bash
-for /d /r %i in (.pytest_cache, __pycache__, assets) do @if exist "%i" rmdir /s /q "%i"
+for /d /r %i in (.pytest_cache, __pycache__) do @if exist "%i" rmdir /s /q "%i"
 ```
