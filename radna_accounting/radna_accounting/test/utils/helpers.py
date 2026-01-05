@@ -37,6 +37,27 @@ sql_map = {
                 "<coa_updated_date>": ""
             }
         },
+        "Uniqueness Test with description equal to Null": {
+            "file_path": f"{BASE_DIR}\\db\\sqlite\\chart_of_accounts\\select_coa_description_is_none.sql",
+            "columns": [
+                 "account_id", 
+                 "name", 
+                 "type", 
+                 "description", 
+                 "account_mapping", 
+                 "created_date", 
+                 "updated_date"
+            ],
+            "parameters": {
+                "<coa_id>": "",
+                "<coa_account_id>": "",
+                "<coa_name>": "",
+                "<coa_type>": "",
+                "<coa_account_mapping>": "",
+                "<coa_created_date>": "",
+                "<coa_updated_date>": ""
+            }
+        },
         "Search By ID": {
             "file_path": f"{BASE_DIR}\\db\\sqlite\\chart_of_accounts\\select_coa_by_id.sql",
             "columns": [
@@ -85,7 +106,7 @@ def load_mapped_sql_files(table_name, sql_name, params):
          "columns": columns
     }
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def generate_account_request_payload():
     current_datetime = datetime.now(timezone.utc)
     input_values = {

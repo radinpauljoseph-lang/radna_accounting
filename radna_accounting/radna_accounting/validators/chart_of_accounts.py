@@ -1,15 +1,14 @@
 from pydantic import BaseModel, model_validator
 from datetime import datetime
-import uuid
-from uuid import UUID
+from ..models.chart_of_accounts import coa_types
 
 model_name = "ChartOfAccountsModel"
 account_types = [
-    'ASSET',
-    'LIABILITY',
-    'EQUITY',
-    'REVENUE',
-    'EXPENSES'
+    coa_types.ASSET,
+    coa_types.LIABILITY,
+    coa_types.EQUITY,
+    coa_types.REVENUE,
+    coa_types.EXPENSES
 ]
 
 class ChartOfAccountsModel(BaseModel):

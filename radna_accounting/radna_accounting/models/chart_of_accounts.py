@@ -1,6 +1,5 @@
 import uuid
 from sqlalchemy import Table, Column, String, DateTime
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import text
 from ..configs.config import(
     CONFIGS,
@@ -19,7 +18,17 @@ class ChartOfAccountTableMetaData:
         self.CREATED_DATE = "created_date"
         self.UPDATED_DATE = "updated_date"
 
+class AccountTypes:
+    def __init__(self):
+        self.ASSET = "ASSET"
+        self.LIABILITY = "LIABILITY"
+        self.EQUITY = "EQUITY"
+        self.REVENUE = "REVENUE"
+        self.EXPENSES = "EXPENSES"
+
 coa_meta = ChartOfAccountTableMetaData()
+coa_types = AccountTypes()
+
 schema_string = CONFIGS[f"{ENV}.database"]['schema'] if CONFIGS[f"{ENV}.database"]['schema'] != 'null' else None
 uuid_generator_keyword = text("gen_random_uuid()") if schema_string is not None else None
 sqlite_default=lambda: uuid.uuid4()

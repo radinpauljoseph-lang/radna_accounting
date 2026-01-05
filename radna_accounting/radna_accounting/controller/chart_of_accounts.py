@@ -7,6 +7,10 @@ from ..configs.config import (
     engine
 )
 from ..validators.chart_of_accounts import ChartOfAccountsModel
+from ..core.chart_of_accounts.chart_of_accounts import (
+    ChartOfAccountsCore
+)
+from ..models.chart_of_accounts import coa_meta
 from ..core.chart_of_accounts.record_operations import (
     account_record_value_validate,
     account_select_record,
@@ -18,33 +22,32 @@ class ChartOfAccountsController:
     def __init__(self):
         self.validator_model = ChartOfAccountsModel
         self.engine = engine
+        self.core_model = ChartOfAccountsCore()
+
     def create_account(self, obj) -> dict:
         return_data = {}
         try:
             account_obj = self.validator_model(**obj)
             account_obj = account_obj.model_dump()
-            account_obj['id'] = uuid.uuid4()
 
-            account_id_exists = account_record_value_validate(self.engine, 'account_id', account_obj['account_id'])
-            account_name_exists = account_record_value_validate(self.engine, 'name', account_obj['name'])
+            account_id_exists = self.core_model.selectRecordById(account_obj[coa_meta.ACCOUNT_ID])
+            account_name_exists = self.core_model.selectRecordByName(account_obj[coa_meta.NAME])
             if not account_id_exists and not account_name_exists:
                 record = copy.deepcopy(account_obj)
-                del record['created_date']
-                del record['updated_date']
-                if record['account_mapping'] is not None:
-                    if record['account_mapping'] == str(record['account_id']):
+                del record[coa_meta.CREATED_DATE]
+                del record[coa_meta.UPDATED_DATE]
+                if record[coa_meta.ACCOUNT_MAPPING] is not None:
+                    if record[coa_meta.ACCOUNT_MAPPING] == str(record[coa_meta.ACCOUNT_MAPPING]):
                         raise Exception("account_mapping should not be the same as account_id")
-                    account_id_exists = account_record_value_validate(self.engine, 'account_id', record['account_mapping'])
+                    account_id_exists = self.core_model.selectRecordById(account_obj[coa_meta.ACCOUNT_MAPPING])
                     if not account_id_exists:
                         raise Exception("Account Map Not Found")
                     
-                account_insert_record(self.engine, record)
-                record = account_select_record(self.engine, 'account_id', record['account_id'])
+                self.core_model.insertRecord(record)
+                record = self.core_model.selectRecordById(record[coa_meta.ACCOUNT_ID])
                 record = self.validator_model(**record)
                 record = record.model_dump()
-                return_data = {
-                    "data": record
-                }
+                return_data = record
                 logger.info(f"create_account - {return_data}")
             else:
                 return_data = {

@@ -75,13 +75,18 @@ class ChartOfAccountsCore:
             record[coa_meta.ACCOUNT_ID] = account_id
             record = self.dto_model(**record).model_dump()
             record[coa_meta.UPDATED_DATE] = datetime.now()
-            update_statement = chart_of_accounts\
-                .update()\
-                .where(chart_of_accounts.c.account_id == account_id)\
-                .values(**record)
-            conn.execute(update_statement)
-            conn.commit()
-            logger.info(f"updateRecordById - Done Update Account Record: {account_id}")
+
+            query_result = self.selectRecordById(account_id)
+            if query_result is not None:
+                update_statement = chart_of_accounts\
+                    .update()\
+                    .where(chart_of_accounts.c.account_id == account_id)\
+                    .values(**record)
+                conn.execute(update_statement)
+                conn.commit()
+                logger.info(f"updateRecordById - Done Update Account Record: {account_id}")
+            else:
+                raise Exception(f"updateRecordById - Account ID {account_id} does not exist")
     
     def deleteRecordById(self, account_id):
         logger.info(f"deleteRecordById - Start Delete Account Record: {account_id}")
