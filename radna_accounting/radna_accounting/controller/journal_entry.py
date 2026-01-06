@@ -3,7 +3,8 @@ import uuid
 from datetime import datetime
 
 from ..configs.config import (
-    logger, 
+    logger_types,
+    loggerOutput,
     engine
 )
 from ..validators.journal_entry import JournalEntryModel
@@ -108,29 +109,29 @@ class JournalEntryController:
                     transaction_id_tracker_insert_record(self.engine, transaction_id_tracker_record)
                     
                 record = je_select_record(self.engine, record['id'])
-                logger.info(record)
+                loggerOutput(message=record)
                 record = self.validator_model(**record)
                 record = record.model_dump()
                 return_data = {
                     "data": record
                 }
-                logger.info(f"create_journal_entry - {return_data}")
+                loggerOutput(message=f"create_journal_entry - {return_data}")
             else:
                 return_data = {
                     "error": "create_journal_entry - Journal Entry already exists"
                 }
         except TypeError as e:
-            logger.error(f"create_journal_entry - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"create_journal_entry - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except BaseException as e:
-            logger.error(f"create_journal_entry - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"create_journal_entry - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         finally:
-            logger.info(f"DONE: create_journal_entry - {return_data}")
+            loggerOutput(message=f"DONE: create_journal_entry - {return_data}")
             return return_data
     
     def update_journal_entry(self, id, obj) -> dict:
@@ -186,28 +187,28 @@ class JournalEntryController:
                 return_data = {
                     "data": record
                 }
-                logger.info(f"update_journal_entry - {return_data}")
+                loggerOutput(message=f"update_journal_entry - {return_data}")
             else:
                 return_data = {
                     "error": "update_journal_entry - Journal Entry ID Not Found"
                 }
         except TypeError as e:
-            logger.error(f"update_journal_entry - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"update_journal_entry - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except ValueError as e:
-            logger.error(f"update_journal_entry - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"update_journal_entry - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except BaseException as e:
-            logger.error(f"update_journal_entry - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"update_journal_entry - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         finally:
-            logger.info(f"DONE: update_journal_entry - {return_data}")
+            loggerOutput(message=f"DONE: update_journal_entry - {return_data}")
             return return_data
 
     def post_journal_entry_by_transaction_id(self, id) -> dict:
@@ -246,28 +247,28 @@ class JournalEntryController:
                     return_data = {
                         "data": record.to_dict()
                     }
-                    logger.info(f"post_journal_entry_by_transaction_id - {return_data}")
+                    loggerOutput(message=f"post_journal_entry_by_transaction_id - {return_data}")
             else:
                 return_data = {
                     "error": "post_journal_entry_by_transaction_id - Journal Entry Transaction ID Not Found"
                 }
         except TypeError as e:
-            logger.error(f"post_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"post_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except ValueError as e:
-            logger.error(f"post_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"post_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except BaseException as e:
-            logger.error(f"post_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"post_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         finally:
-            logger.info(f"DONE: post_journal_entry_by_transaction_id - {return_data}")
+            loggerOutput(message=f"DONE: post_journal_entry_by_transaction_id - {return_data}")
             return return_data
         
     def post_journal_entry_by_month_year(self, month, year) -> dict:
@@ -282,14 +283,14 @@ class JournalEntryController:
                     }
                 else:
                     transaction_ids = record['transaction_id'].unique()
-                    logger.info("@@@@@@@@@@@@@@@@@")
-                    logger.info(transaction_ids)
-                    logger.info("@@@@@@@@@@@@@@@@@")
+                    loggerOutput(message="@@@@@@@@@@@@@@@@@")
+                    loggerOutput(message=transaction_ids)
+                    loggerOutput(message="@@@@@@@@@@@@@@@@@")
                     # record = je_select_by_transaction_date_month_year_record(self.engine, month, year)
                     for index in range(len(transaction_ids)):
-                        logger.info("@@@@@@@@@@@@@@@@@")
-                        logger.info(transaction_ids[index])
-                        logger.info("@@@@@@@@@@@@@@@@@")
+                        loggerOutput(message="@@@@@@@@@@@@@@@@@")
+                        loggerOutput(message=transaction_ids[index])
+                        loggerOutput(message="@@@@@@@@@@@@@@@@@")
                         filtered_records = record[record['transaction_id'] == transaction_ids[index]]
                         credit_je_records = filtered_records[filtered_records['entry_type'] == 'CREDIT']
                         debit_je_records = filtered_records[filtered_records['entry_type'] == 'DEBIT']
@@ -313,28 +314,28 @@ class JournalEntryController:
                     return_data = {
                         "data": record.to_dict()
                     }
-                    logger.info(f"post_journal_entry_by_month_year - {return_data}")
+                    loggerOutput(message=f"post_journal_entry_by_month_year - {return_data}")
             else:
                 return_data = {
                     "error": "post_journal_entry_by_month_year - Journal Entry Transaction IDs by given month & year Not Found"
                 }
         except TypeError as e:
-            logger.error(f"post_journal_entry_by_month_year - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"post_journal_entry_by_month_year - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except ValueError as e:
-            logger.error(f"post_journal_entry_by_month_year - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"post_journal_entry_by_month_year - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except BaseException as e:
-            logger.error(f"post_journal_entry_by_month_year - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"post_journal_entry_by_month_year - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         finally:
-            logger.info(f"DONE: post_journal_entry_by_month_year - {return_data}")
+            loggerOutput(message=f"DONE: post_journal_entry_by_month_year - {return_data}")
             return return_data
         
     
@@ -347,23 +348,23 @@ class JournalEntryController:
                 return_data = {
                     "data": record
                 }
-                logger.info(f"get_journal_entry - {return_data}")
+                loggerOutput(message=f"get_journal_entry - {return_data}")
             else:
                 return_data = {
                     "error": "get_journal_entry - Journal Entry ID Not Found"
                 }
         except TypeError as e:
-            logger.error(f"get_journal_entry - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"get_journal_entry - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except BaseException as e:
-            logger.error(f"get_journal_entry - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"get_journal_entry - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         finally:
-            logger.info(f"DONE: get_journal_entry - {return_data}")
+            loggerOutput(message=f"DONE: get_journal_entry - {return_data}")
             return return_data
         
     def get_journal_entry_by_transaction_id(self, id) -> dict:
@@ -374,23 +375,23 @@ class JournalEntryController:
                 return_data = {
                     "data": record.to_dict()
                 }
-                logger.info(f"get_journal_entry_by_transaction_id - {return_data}")
+                loggerOutput(message=f"get_journal_entry_by_transaction_id - {return_data}")
             else:
                 return_data = {
                     "error": "get_journal_entry_by_transaction_id - Transaction ID Not Found"
                 }
         except TypeError as e:
-            logger.error(f"get_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"get_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except BaseException as e:
-            logger.error(f"get_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"get_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         finally:
-            logger.info(f"DONE: get_journal_entry_by_transaction_id - {return_data}")
+            loggerOutput(message=f"DONE: get_journal_entry_by_transaction_id - {return_data}")
             return return_data
 
     def delete_journal_entry_by_transaction_id(self, id) -> dict:
@@ -407,7 +408,7 @@ class JournalEntryController:
                             "status": "DELETED"
                         }
                     }
-                    logger.info(f"delete_journal_entry_by_transaction_id - {return_data}")
+                    loggerOutput(message=f"delete_journal_entry_by_transaction_id - {return_data}")
                 else:
                     return_data = {
                     "error": "delete_journal_entry_by_transaction_id - Transaction ID has posted records"
@@ -417,17 +418,17 @@ class JournalEntryController:
                     "error": "delete_journal_entry_by_transaction_id - Transaction ID Not Found"
                 }
         except TypeError as e:
-            logger.error(f"delete_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"delete_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except BaseException as e:
-            logger.error(f"delete_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"delete_journal_entry_by_transaction_id - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         finally:
-            logger.info(f"DONE: delete_journal_entry_by_transaction_id - {return_data}")
+            loggerOutput(message=f"DONE: delete_journal_entry_by_transaction_id - {return_data}")
             return return_data
 
         

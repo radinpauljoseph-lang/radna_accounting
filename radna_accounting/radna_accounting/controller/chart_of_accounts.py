@@ -2,14 +2,22 @@ import copy
 import uuid
 from datetime import datetime
 
+from ..utils.decorators.error_handling import catchAndLog
 from ..configs.config import (
-    logger, 
+    logger_types,
+    loggerOutput,
     engine
 )
 from ..validators.chart_of_accounts import ChartOfAccountsModel
+from ..configs.response_codes.mapping import (
+    COA_CODE,
+    MESSAGE_KEY,
+    error_map
+)
 from ..core.chart_of_accounts.chart_of_accounts import (
     ChartOfAccountsCore
 )
+from ..validators.data_model import DATA_KEY
 from ..models.chart_of_accounts import coa_meta
 from ..core.chart_of_accounts.record_operations import (
     account_record_value_validate,
@@ -18,131 +26,117 @@ from ..core.chart_of_accounts.record_operations import (
     account_update_record
 )
 
+@catchAndLog(Exception, TypeError, ValueError, BaseException)
 class ChartOfAccountsController:
-    def __init__(self):
+    def __init__(self, rrn = None):
         self.validator_model = ChartOfAccountsModel
         self.engine = engine
-        self.core_model = ChartOfAccountsCore()
+        self.core_model = ChartOfAccountsCore
+        self.rrn = rrn
 
     def create_account(self, obj) -> dict:
         return_data = {}
         try:
             account_obj = self.validator_model(**obj)
             account_obj = account_obj.model_dump()
+            core_model = self.core_model(self.rrn)
 
-            account_id_exists = self.core_model.selectRecordById(account_obj[coa_meta.ACCOUNT_ID])
-            account_name_exists = self.core_model.selectRecordByName(account_obj[coa_meta.NAME])
+            account_id_exists = core_model.selectRecordById(account_obj[coa_meta.ACCOUNT_ID])
+            account_name_exists = core_model.selectRecordByName(account_obj[coa_meta.NAME])
             if not account_id_exists and not account_name_exists:
                 record = copy.deepcopy(account_obj)
-                del record[coa_meta.CREATED_DATE]
-                del record[coa_meta.UPDATED_DATE]
                 if record[coa_meta.ACCOUNT_MAPPING] is not None:
-                    if record[coa_meta.ACCOUNT_MAPPING] == str(record[coa_meta.ACCOUNT_MAPPING]):
-                        raise Exception("account_mapping should not be the same as account_id")
-                    account_id_exists = self.core_model.selectRecordById(account_obj[coa_meta.ACCOUNT_MAPPING])
-                    if not account_id_exists:
+                    if record[coa_meta.ACCOUNT_MAPPING] == record[coa_meta.ACCOUNT_ID]:
+                        raise Exception("account_mapping should not be the same as Account ID")
+                    account_mapping_id_exists = core_model.selectRecordById(account_obj[coa_meta.ACCOUNT_MAPPING])
+                    if not account_mapping_id_exists:
                         raise Exception("Account Map Not Found")
                     
-                self.core_model.insertRecord(record)
-                record = self.core_model.selectRecordById(record[coa_meta.ACCOUNT_ID])
-                record = self.validator_model(**record)
-                record = record.model_dump()
+                core_model.insertRecord(record)
+                record = core_model.selectRecordById(record[coa_meta.ACCOUNT_ID])
                 return_data = record
-                logger.info(f"create_account - {return_data}")
+                loggerOutput(message=f"create_account - {return_data}")
             else:
                 return_data = {
                     "error": "create_account - Account already exists"
                 }
         except TypeError as e:
-            logger.error(f"create_account - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"create_account - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except BaseException as e:
-            logger.error(f"create_account - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"create_account - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         finally:
-            logger.info(f"DONE: create_account - {return_data}")
+            loggerOutput(message=f"DONE: create_account - {return_data}")
             return return_data
     
+    @catchAndLog(Exception, TypeError, ValueError, BaseException)
     def update_account(self, id, obj) -> dict:
         return_data = {}
-        try:
-            id_value = str(id)
-            temp_obj = copy.deepcopy(obj)
-            temp_obj['account_id'] = id_value
-            account_obj = self.validator_model(**temp_obj)
-            account_obj = account_obj.model_dump()
-            allowed_fields = [
-                'name',
-                'type',
-                'description',
-                'account_mapping'
-            ]
-            account_id_exists = account_record_value_validate(self.engine, 'account_id', id_value, False)
-            if account_id_exists:
-                record = account_select_record(self.engine, 'account_id', id_value)
-                record = self.validator_model(**record)
-                record = record.model_dump()
-                for key in obj.keys():
-                    if key not in allowed_fields:
-                        return_data = {
-                            "error": f"update_account - {key} field not allowed"
-                        }
-                        raise Exception(f"{key} field not allowed")
-                    
-                if account_obj['name'] != record['name']:
-                    account_name_exists = account_record_value_validate(self.engine, 'name', obj['name'], True)
-                    if account_name_exists:
-                        raise Exception("update_account - Account Name already exists")
-                
-                if account_obj['account_mapping'] is not None:
-                    if account_obj['account_mapping'] == record['account_id']:
-                        raise Exception("account_mapping should not be the same as account_id")
-                    account_id_exists = account_record_value_validate(self.engine, 'account_id', account_obj['account_mapping'])
-                    if not account_id_exists:
-                        raise Exception("Account Map Not Found")
-                    
-                now = datetime.now()
-                now = now.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(now.microsecond/1000):03d}"
-                record['updated_date'] = now
-                for key in account_obj.keys():
-                    if key in allowed_fields:
-                        record[key] = account_obj[key]
-                    
-                account_update_record(self.engine, id_value, record)
-                record = account_select_record(self.engine, 'account_id', id_value)
-                record = self.validator_model(**record)
-                record = record.model_dump()
+        allowed_fields = [
+            coa_meta.NAME,
+            coa_meta.TYPE,
+            coa_meta.DESCRIPTION,
+            coa_meta.ACCOUNT_MAPPING
+        ]
 
-                return_data = {
-                    "data": record
-                }
-                logger.info(f"update_account - {return_data}")
-            else:
-                return_data = {
-                    "error": "update_account - Account Not Found"
-                }
-        except TypeError as e:
-            logger.error(f"update_account - Caught something: {type(e).__name__} -> {e}")
-            return_data = {
-                "error": str(e)
-            }
-        except ValueError as e:
-            logger.error(f"update_account - Caught something: {type(e).__name__} -> {e}")
-            return_data = {
-                "error": str(e)
-            }
-        except BaseException as e:
-            logger.error(f"update_account - Caught something: {type(e).__name__} -> {e}")
-            return_data = {
-                "error": str(e)
-            }
-        finally:
-            logger.info(f"DONE: update_account - {return_data}")
-            return return_data
+        loggerOutput(rrn=self.rrn, message=f"ChartOfAccountsController.update_account - Start Updating Account")        
+        temp_obj = copy.deepcopy(obj)
+        temp_obj[coa_meta.ACCOUNT_ID] = id
+        account_obj = self.validator_model(**temp_obj)
+        account_obj = account_obj.model_dump()
+        core_model = self.core_model(self.rrn)
+
+        account_id_exists = core_model.selectRecordById(id)
+        if account_id_exists:
+            record = copy.deepcopy(account_id_exists[DATA_KEY])
+            record[coa_meta.ACCOUNT_MAPPING] = account_obj[coa_meta.ACCOUNT_MAPPING]
+            record = self.validator_model(**record)
+            record = record.model_dump()
+            for key in obj.keys():
+                if key not in allowed_fields:
+                    error = copy.deepcopy(error_map.get(f"{COA_CODE}0102"))
+                    error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                        key=key
+                    )
+                    raise Exception(error)
+                    
+            if account_obj[coa_meta.NAME] != record[coa_meta.NAME]:
+                account_name_exists = core_model.selectRecordByName(account_obj[coa_meta.NAME])
+                if account_name_exists:
+                    error = copy.deepcopy(error_map.get(f"{COA_CODE}0103"))
+                    error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                        account_name=account_obj[coa_meta.NAME]
+                    )
+                    raise Exception(error)
+            
+            account_mapping_id_exists = core_model.selectRecordById(record[coa_meta.ACCOUNT_MAPPING])
+            if not account_mapping_id_exists:
+                error = copy.deepcopy(error_map.get(f"{COA_CODE}0104"))
+                error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                    account_mapping=record[coa_meta.ACCOUNT_MAPPING]
+                )
+                raise Exception(error)
+                
+            for key in account_obj.keys():
+                if key in allowed_fields:
+                    record[key] = account_obj[key]
+                
+            core_model.updateRecordById(id, record)
+            record = core_model.selectRecordById(id)
+            return_data = record
+            loggerOutput(rrn=self.rrn, message=f"ChartOfAccountsController.update_account - {return_data}")
+        else:
+            error = copy.deepcopy(error_map.get(f"{COA_CODE}0101"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                account_id=id
+            )
+            raise Exception(error)
+        return return_data
 
     def get_account(self, id) -> dict:
         return_data = {}
@@ -162,24 +156,24 @@ class ChartOfAccountsController:
                     return_data = {
                         "data": account_obj
                     }
-                    logger.info(f"get_account - {return_data}")
+                    loggerOutput(message=f"get_account - {return_data}")
                     break
             else:
                 return_data = {
                     "error": "get_account - Account Not Found"
                 }
         except TypeError as e:
-            logger.error(f"get_account - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"get_account - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except BaseException as e:
-            logger.error(f"get_account - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"get_account - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         finally:
-            logger.info(f"DONE: get_account - {return_data}")
+            loggerOutput(message=f"DONE: get_account - {return_data}")
             return return_data
 
         

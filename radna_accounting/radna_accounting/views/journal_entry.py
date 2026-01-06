@@ -1,4 +1,7 @@
-from ..configs.config import logger
+from ..configs.config import (
+    logger_types,
+    loggerOutput
+)
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -23,12 +26,12 @@ def create_journal_entry_request(request):
                 "error": f"create_journal_entry_request - Method {request.method} is not supported" 
             }
     except Exception as e:
-        logger.error(f"create_journal_entry_request - Caught something: {type(e).__name__} -> {e}")
+        loggerOutput(method=logger_types.ERROR, message=f"create_journal_entry_request - Caught something: {type(e).__name__} -> {e}")
         result = {
             "error": str(e)
         }
     finally:
-        logger.info(f"create_journal_entry_request - {result}")
+        loggerOutput(message=f"create_journal_entry_request - {result}")
         if 'error' in result:
             return JsonResponse(result, status=400)
         else:
@@ -43,7 +46,7 @@ def get_update_journal_entry_request(request, id = None):
             result = {
                 "error": "get_update_journal_entry_request - Journal Entry ID required"
             }
-            logger.error(result)
+            loggerOutput(method=logger_types.ERROR, message=result)
         method = request.method
         if method == "GET":
             result = controller.get_journal_entry(id)
@@ -55,14 +58,14 @@ def get_update_journal_entry_request(request, id = None):
             result = {
                 "error": f"get_update_journal_entry_request - Method {request.method} is not supported" 
             }
-            logger.error(result)
+            loggerOutput(method=logger_types.ERROR, message=result)
     except Exception as e:
-        logger.error(f"get_update_journal_entry_request - Caught something: {type(e).__name__} -> {e}")
+        loggerOutput(method=logger_types.ERROR, message=f"get_update_journal_entry_request - Caught something: {type(e).__name__} -> {e}")
         result = {
             "error": str(e)
         }
     finally:
-        logger.info(f"get_update_journal_entry_request - {result}")
+        loggerOutput(message=f"get_update_journal_entry_request - {result}")
         if 'error' in result:
             return JsonResponse(result, status=400)
         else:
@@ -77,7 +80,7 @@ def get_delete_journal_entry_by_transaction_id_request(request, transaction_id =
             result = {
                 "error": "get_delete_journal_entry_by_transaction_id_request - Journal Entry Transaction ID required"
             }
-            logger.error(result)
+            loggerOutput(method=logger_types.ERROR, message=result)
         method = request.method
         if method == "GET":
             result = controller.get_journal_entry_by_transaction_id(transaction_id)
@@ -87,14 +90,14 @@ def get_delete_journal_entry_by_transaction_id_request(request, transaction_id =
             result = {
                 "error": f"get_delete_journal_entry_by_transaction_id_request - Method {request.method} is not supported" 
             }
-            logger.error(result)
+            loggerOutput(method=logger_types.ERROR, message=result)
     except Exception as e:
-        logger.error(f"get_delete_journal_entry_by_transaction_id_request - Caught something: {type(e).__name__} -> {e}")
+        loggerOutput(method=logger_types.ERROR, message=f"get_delete_journal_entry_by_transaction_id_request - Caught something: {type(e).__name__} -> {e}")
         result = {
             "error": str(e)
         }
     finally:
-        logger.info(f"get_delete_journal_entry_by_transaction_id_request - {result}")
+        loggerOutput(message=f"get_delete_journal_entry_by_transaction_id_request - {result}")
         if 'error' in result:
             return JsonResponse(result, status=400)
         else:
@@ -110,7 +113,7 @@ def post_journal_entry_by_month_year_request(request, month, year):
             result = {
                 "error": "post_journal_entry_by_month_year_request - Month & Year required"
             }
-            logger.error(result)
+            loggerOutput(method=logger_types.ERROR, message=result)
         method = request.method
         if method == "POST":
             result = controller.post_journal_entry_by_month_year(month, year)
@@ -118,14 +121,14 @@ def post_journal_entry_by_month_year_request(request, month, year):
             result = {
                 "error": f"post_journal_entry_by_month_year_request - Method {request.method} is not supported" 
             }
-            logger.error(result)
+            loggerOutput(method=logger_types.ERROR, message=result)
     except Exception as e:
-        logger.error(f"post_journal_entry_by_month_year_request - Caught something: {type(e).__name__} -> {e}")
+        loggerOutput(method=logger_types.ERROR, message=f"post_journal_entry_by_month_year_request - Caught something: {type(e).__name__} -> {e}")
         result = {
             "error": str(e)
         }
     finally:
-        logger.info(f"post_journal_entry_by_month_year_request - {result}")
+        loggerOutput(message=f"post_journal_entry_by_month_year_request - {result}")
         if 'error' in result:
             return JsonResponse(result, status=400)
         else:

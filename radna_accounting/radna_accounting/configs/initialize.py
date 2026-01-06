@@ -1,5 +1,5 @@
-import logging
 from .config import (
+    loggerOutput,
     meta,
     engine
 )
@@ -19,12 +19,7 @@ from ..models.transaction_id_tracker import (
     transaction_id_tracker
 )
 from sqlalchemy import inspect
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
 
-logger = logging.getLogger(__name__)
 table_definitions = [
     chart_of_accounts.name,
     journal_entry.name,
@@ -36,12 +31,12 @@ def initialize():
     inspector = inspect(engine)
     for index in range(len(table_definitions)):
         if inspector.has_table(table_definitions[index]):
-            logger.info(f"{table_definitions[index]} table already exists")
+            loggerOutput(message=f"{table_definitions[index]} table already exists")
             continue
         else:
-            logging.info("Execute meta.create_all")
+            loggerOutput(message="Execute meta.create_all")
             meta.create_all(engine)
-            logging.info("SUCCESS meta.create_all")
+            loggerOutput(message="SUCCESS meta.create_all")
             break
 
 

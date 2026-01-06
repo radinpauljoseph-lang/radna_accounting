@@ -7,6 +7,7 @@ from ...models.chart_of_accounts import coa_meta
 from ...validators.chart_of_accounts import (
     ChartOfAccountsModel
 )
+from ...validators.data_model import DATA_KEY
 from ...core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
 
 from ..utils.db.connector import (
@@ -27,7 +28,6 @@ creds = {
 class TestAccountSelectRecord:
     @pytest.mark.parametrize("param", ["byId", "byName"])
     def test_happy_path(self, generate_account_request_payload, param):
-        DATA_KEY = 'data'
         core_model = ChartOfAccountsCore()
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"

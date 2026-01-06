@@ -1,5 +1,4 @@
 import pytest
-import logging
 from datetime import datetime, timezone
 from ...models.chart_of_accounts import *
 from ...validators.chart_of_accounts import (
@@ -11,12 +10,6 @@ from ..utils.db.connector import (
     SQLiteClient
 )
 from ..utils.helpers import *
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-
 
 creds = {
     "file_name": "temp_state.db"
@@ -70,7 +63,6 @@ class TestAccountInsertRecord:
         core_model.insertRecord(payload)
         with pytest.raises(Exception) as excinfo:
             core_model.insertRecord(payload)
-        logging.info(str(excinfo))
         assert expected in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Uniqueness Test", where_clause_values)
@@ -84,7 +76,7 @@ class TestAccountInsertRecord:
         assert result.shape[0] == 1
 
     @pytest.mark.parametrize("param", [1, -1, 1.11, -1.11, True, {'key', 1}, {'key': 1}, None])
-    def test_invalid_account_id_values_TypeError(self, generate_account_request_payload, param):
+    def test_invalid_account_id_values_Exception(self, generate_account_request_payload, param):
         expected = f"ChartOfAccountsModel Error: incorrect account ID data type '{type(param).__name__}'"
         core_model = ChartOfAccountsCore()
 
@@ -97,9 +89,8 @@ class TestAccountInsertRecord:
         }
         payload[coa_meta.ACCOUNT_ID] = param
         
-        with pytest.raises(TypeError) as excinfo:
+        with pytest.raises(Exception) as excinfo:
             core_model.insertRecord(payload)
-        logging.info(str(excinfo))
         assert expected in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values)
@@ -113,9 +104,8 @@ class TestAccountInsertRecord:
         assert result.shape[0] == 0
 
 
-    @pytest.mark.parametrize("param", ["", "1234", "1234567890123456"])
-    def test_invalid_account_id_values_ValidationError(self, generate_account_request_payload, param):
-        from pydantic import ValidationError
+    @pytest.mark.parametrize("param", ["", "1234", "1234567890123451234567890123456"])
+    def test_invalid_account_id_values_field_length_error(self, generate_account_request_payload, param):
         core_model = ChartOfAccountsCore()
 
         current_datetime = datetime.now(timezone.utc)
@@ -129,15 +119,15 @@ class TestAccountInsertRecord:
         del payload[coa_meta.CREATED_DATE]
         del payload[coa_meta.UPDATED_DATE]
         
-        error_1 = "ChartOfAccountsModel Error: account ID minimum field length...ount_mapping': None}, input_type=dict]"
-        error_2 = "ChartOfAccountsModel Error: account ID maximum length is 15"
-        with pytest.raises(ValidationError) as excinfo:
+        error_code_one = "COA0002"
+        error_code_two = "COA0003"
+        with pytest.raises(Exception) as excinfo:
             core_model.insertRecord(payload)
-        logging.info(str(excinfo))
+
         if len(param) < 5:
-            assert error_1 in str(excinfo)
+            assert error_code_one in str(excinfo)
         else:
-            assert error_2 in str(excinfo)
+            assert error_code_two in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values)
         db_obj = SQLiteClient(creds)
@@ -150,7 +140,7 @@ class TestAccountInsertRecord:
         assert result.shape[0] == 0
 
     @pytest.mark.parametrize("param", [1, -1, 1.11, -1.11, True, {'key', 1}, {'key': 1}, None])
-    def test_invalid_account_name_values_TypeError(self, generate_account_request_payload, param):
+    def test_invalid_account_name_values_Exception(self, generate_account_request_payload, param):
         expected = f"ChartOfAccountsModel Error: incorrect account name data type '{type(param).__name__}'"
         core_model = ChartOfAccountsCore()
         
@@ -165,9 +155,9 @@ class TestAccountInsertRecord:
         del payload[coa_meta.CREATED_DATE]
         del payload[coa_meta.UPDATED_DATE]
 
-        with pytest.raises(TypeError) as excinfo:
+        with pytest.raises(Exception) as excinfo:
             core_model.insertRecord(payload)
-        logging.info(str(excinfo))
+        
         assert expected in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values)
@@ -182,8 +172,7 @@ class TestAccountInsertRecord:
 
 
     @pytest.mark.parametrize("param", ["", "2647902066830292456314023255772735635300818039589536229964640280111382742403410796944455975648526778393253846437709638360033347483170939266852249670143"])
-    def test_invalid_account_name_values_ValidationError(self, generate_account_request_payload, param):
-        from pydantic import ValidationError
+    def test_invalid_account_name_values_field_length_error(self, generate_account_request_payload, param):
         core_model = ChartOfAccountsCore()
         
         current_datetime = datetime.now(timezone.utc)
@@ -197,16 +186,16 @@ class TestAccountInsertRecord:
         del payload[coa_meta.CREATED_DATE]
         del payload[coa_meta.UPDATED_DATE]
 
-        error_1 = "ChartOfAccountsModel Error: account name minimum length is ...ount_mapping': None}"
-        error_2 = "ChartOfAccountsModel Error: account name maximum length is ...ount_mapping': None}"
+        error_code_one = "COA0006"
+        error_code_two = "COA0005"
 
-        with pytest.raises(ValidationError) as excinfo:
+        with pytest.raises(Exception) as excinfo:
             core_model.insertRecord(payload)
-        logging.info(str(excinfo))
+        
         if len(param) <= 0:
-            assert error_1 in str(excinfo)
+            assert error_code_one in str(excinfo)
         else:
-            assert error_2 in str(excinfo)
+            assert error_code_two in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values)
         db_obj = SQLiteClient(creds)
@@ -219,7 +208,7 @@ class TestAccountInsertRecord:
         assert result.shape[0] == 0
 
     @pytest.mark.parametrize("param", [1, -1, 1.11, -1.11, True, {'key', 1}, {'key': 1}, None])
-    def test_invalid_account_type_values_TypeError(self, generate_account_request_payload, param):
+    def test_invalid_account_type_values_Exception(self, generate_account_request_payload, param):
         expected = f"ChartOfAccountsModel Error: incorrect account type data type '{type(param).__name__}'"
         core_model = ChartOfAccountsCore()
 
@@ -235,9 +224,9 @@ class TestAccountInsertRecord:
         del payload[coa_meta.UPDATED_DATE]
 
         
-        with pytest.raises(TypeError) as excinfo:
+        with pytest.raises(Exception) as excinfo:
             core_model.insertRecord(payload)
-        logging.info(str(excinfo))
+        
         assert expected in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values) 
@@ -251,8 +240,7 @@ class TestAccountInsertRecord:
         assert result.shape[0] == 0
 
     @pytest.mark.parametrize("param", ["", "SAMPLE", "DISBURSEMENT", "asset", "liability"])
-    def test_invalid_account_type_values_ValidationError(self, generate_account_request_payload, param):
-        from pydantic import ValidationError
+    def test_invalid_account_type_values_invalid_account_type(self, generate_account_request_payload, param):
         core_model = ChartOfAccountsCore()
 
         expected = "Error: Unknown account type"
@@ -267,9 +255,9 @@ class TestAccountInsertRecord:
         del payload[coa_meta.CREATED_DATE]
         del payload[coa_meta.UPDATED_DATE]
 
-        with pytest.raises(ValidationError) as excinfo:
+        with pytest.raises(Exception) as excinfo:
             core_model.insertRecord(payload)
-        logging.info(str(excinfo))
+        
         assert expected in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values)

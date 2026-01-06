@@ -3,7 +3,8 @@ import uuid
 from datetime import datetime
 
 from ..configs.config import (
-    logger, 
+    logger_types,
+    loggerOutput,
     engine
 )
 from ..validators.accounting_periods import (
@@ -57,23 +58,23 @@ class AccountingPeriodsController:
                 return_data = {
                     "data": record
                 }
-                logger.info(f"create_accounting_period - {return_data}")
+                loggerOutput(message=f"create_accounting_period - {return_data}")
             else:
                 return_data = {
                     "error": "create_accounting_period - Accounting Period already exists"
                 }
         except TypeError as e:
-            logger.error(f"create_accounting_period - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"create_accounting_period - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except BaseException as e:
-            logger.error(f"create_accounting_period - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"create_accounting_period - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         finally:
-            logger.info(f"DONE: create_accounting_period - {return_data}")
+            loggerOutput(message=f"DONE: create_accounting_period - {return_data}")
             return return_data
     
     def close_accounting_period(self, obj) -> dict:
@@ -109,28 +110,28 @@ class AccountingPeriodsController:
                 return_data = {
                     "data": record
                 }
-                logger.info(f"close_accounting_period - {return_data}")
+                loggerOutput(message=f"close_accounting_period - {return_data}")
             else:
                 return_data = {
                     "error": "close_accounting_period - Accounting Period Not Found or already closed"
                 }
         except TypeError as e:
-            logger.error(f"close_accounting_period - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"close_accounting_period - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except ValueError as e:
-            logger.error(f"close_accounting_period - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"close_accounting_period - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         except BaseException as e:
-            logger.error(f"close_accounting_period - Caught something: {type(e).__name__} -> {e}")
+            loggerOutput(method=logger_types.ERROR, message=f"close_accounting_period - Caught something: {type(e).__name__} -> {e}")
             return_data = {
                 "error": str(e)
             }
         finally:
-            logger.info(f"DONE: close_accounting_period - {return_data}")
+            loggerOutput(message=f"DONE: close_accounting_period - {return_data}")
             return return_data
 
     

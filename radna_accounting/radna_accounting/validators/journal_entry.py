@@ -3,17 +3,24 @@ from datetime import datetime, date
 import uuid
 import re
 from uuid import UUID
+from ..models.journal_entry import (
+    je_status,
+    je_types
+)
 
 model_name = "JournalEntryModel"
 transaction_types = [
-    'CREDIT',
-    'DEBIT'
+    je_types.CREDIT,
+    je_types.DEBIT
 ]
 
 allowed_status = [
-    'UNPOSTED',
-    'POSTED'
+    je_status.NEW,
+    je_status.POSTED,
+    je_status.REJECTED,
+    je_status.APPROVED
 ]
+
 class JournalEntryModel(BaseModel):
     id: str | UUID | None = None
     transaction_id: str | None = None

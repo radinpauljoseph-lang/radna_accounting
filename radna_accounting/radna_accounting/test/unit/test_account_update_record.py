@@ -128,7 +128,7 @@ class TestAccounUpdateRecord:
 
         assert result.shape[0] == 1
 
-    @pytest.mark.parametrize("param", [coa_types.ASSET, coa_types.LIABILITY, coa_types.EQUITY, coa_types.LIABILITY, coa_types.REVENUE])
+    @pytest.mark.parametrize("param", [coa_types.ASSET, coa_types.LIABILITY, coa_types.EQUITY, coa_types.LIABILITY, coa_types.REVENUE, coa_types.COST])
     def test_happy_path_update_account_type(self, generate_account_request_payload, param):
         core_model = ChartOfAccountsCore()
         payload = generate_account_request_payload
@@ -196,7 +196,7 @@ class TestAccounUpdateRecord:
             core_model = ChartOfAccountsCore()
             payload = generate_account_request_payload
             payload = ChartOfAccountsModel(**payload).model_dump()
-            expected = f"updateRecordById - Account ID {payload[coa_meta.ACCOUNT_ID]} does not exist"
+            expected = "COA0101"
             
             with pytest.raises(Exception) as excinfo:
                 core_model.updateRecordById(payload[coa_meta.ACCOUNT_ID], payload)

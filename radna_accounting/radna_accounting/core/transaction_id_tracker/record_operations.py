@@ -11,13 +11,13 @@ from ...validators.transaction_id_tracker import TransactionIdTrackerModel
 
 def transaction_id_tracker_insert_record(engine, obj) -> None:
     with engine.connect() as conn:
-        logger.info(f"transaction_id_tracker_insert_record - Start Insert Transaction ID Tracker Record {obj}")
+        loggerOutput(message=f"transaction_id_tracker_insert_record - Start Insert Transaction ID Tracker Record {obj}")
         new_record = TransactionIdTrackerModel(**obj).model_dump()
 
         insert_statement = transaction_id_tracker\
             .insert()\
             .values(**new_record)
-        logger.info(f"transaction_id_tracker_insert_record - Insert Transaction ID Tracker Record {obj}")
+        loggerOutput(message=f"transaction_id_tracker_insert_record - Insert Transaction ID Tracker Record {obj}")
         
         conn.execute(insert_statement)
         conn.commit()
@@ -34,7 +34,7 @@ def transaction_id_tracker_select_by_month_year_record(engine, month, year) -> D
             )
         result = conn.execute(validator).fetchall()
 
-        logger.info(f"je_select_multiple_record - SQL: {validator}")
+        loggerOutput(message=f"je_select_multiple_record - SQL: {validator}")
     
     result = [dict(row._mapping) for row in result]
     result = pd.DataFrame(result)
