@@ -8,15 +8,16 @@ from datetime import datetime, timezone
 from ...validators.chart_of_accounts import (
     account_types
 )
+from pathlib import Path
+BASE_DIR = str(Path(__file__).resolve().parent)
 
 fake = Faker()
 
 sql_map = {
     "Chart Of Accounts": {
         "Uniqueness Test": {
-            "file_path": "./utils/db/sqlite/chart_of_accounts/select_coa_uniqueness_test.sql",
+            "file_path": f"{BASE_DIR}\\db\\sqlite\\chart_of_accounts\\select_coa_uniqueness_test.sql",
             "columns": [
-                 "id", 
                  "account_id", 
                  "name", 
                  "type", 
@@ -36,10 +37,30 @@ sql_map = {
                 "<coa_updated_date>": ""
             }
         },
-        "Search By ID": {
-            "file_path": "./utils/db/sqlite/chart_of_accounts/select_coa_by_id.sql",
+        "Uniqueness Test with description equal to Null": {
+            "file_path": f"{BASE_DIR}\\db\\sqlite\\chart_of_accounts\\select_coa_description_is_none.sql",
             "columns": [
-                 "id", 
+                 "account_id", 
+                 "name", 
+                 "type", 
+                 "description", 
+                 "account_mapping", 
+                 "created_date", 
+                 "updated_date"
+            ],
+            "parameters": {
+                "<coa_id>": "",
+                "<coa_account_id>": "",
+                "<coa_name>": "",
+                "<coa_type>": "",
+                "<coa_account_mapping>": "",
+                "<coa_created_date>": "",
+                "<coa_updated_date>": ""
+            }
+        },
+        "Search By ID": {
+            "file_path": f"{BASE_DIR}\\db\\sqlite\\chart_of_accounts\\select_coa_by_id.sql",
+            "columns": [
                  "account_id", 
                  "name", 
                  "type", 
@@ -53,9 +74,8 @@ sql_map = {
             }
         },
         "Search By Type": {
-            "file_path": "./utils/db/sqlite/chart_of_accounts/select_coa_by_type.sql",
+            "file_path": "f{BASE_DIR}\\db\\sqlite\\chart_of_accounts\\select_coa_by_type.sql",
             "columns": [
-                 "id", 
                  "account_id", 
                  "name", 
                  "type", 
@@ -86,11 +106,10 @@ def load_mapped_sql_files(table_name, sql_name, params):
          "columns": columns
     }
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def generate_account_request_payload():
     current_datetime = datetime.now(timezone.utc)
     input_values = {
-        "id": uuid.uuid4(),
         "account_id": ''.join(random.choices(string.digits, k=6)),
         "name": fake.bs(),
         "type": account_types[random.randrange(0, len(account_types))],

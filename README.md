@@ -45,7 +45,7 @@ pytest --html=report.html -v -o log_cli=true -o log_cli_level=INFO unit
 ### Parallel Tests (10 workers)
 
 ```bash
-pytest --html=report.html -v -o log_cli=true -o log_cli_level=INFO -n 10 unit
+pytest --html=report.html -v -o log_cli=true -o log_cli_level=INFO -n 10 radna_accounting/radna_accounting/test/unit
 ```
 
 ---

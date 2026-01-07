@@ -11,7 +11,7 @@ WHERE 1=1
 AND account_id = '<coa_account_id>'
 AND name = '<coa_name>'
 AND type = '<coa_type>'
-AND description = '<coa_description>'
+AND description IS NULL
 AND (
     account_mapping IS NULL
     OR (

@@ -1,36 +1,15 @@
 import pytest
-import logging
 from datetime import datetime, timezone
-from sqlalchemy import (
-    create_engine
-)
-from sqlalchemy.orm import (
-    declarative_base
-)
-from ...configs.config import (
-    engine,
-    ENV
-)
-from ...configs.initialize import initialize
 from ...models.chart_of_accounts import *
 from ...validators.chart_of_accounts import (
     ChartOfAccountsModel
 )
-from ...core.chart_of_accounts.record_operations import (
-    account_insert_record
-)
+from ...core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
+from ...models.chart_of_accounts import coa_meta
 from ..utils.db.connector import (
-    SQLiteClient,
-    PostgreSQLClient
+    SQLiteClient
 )
 from ..utils.helpers import *
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-
-Base = declarative_base()
 
 creds = {
     "file_name": "temp_state.db"
@@ -38,21 +17,21 @@ creds = {
 
 class TestAccountInsertRecord:
     def test_happy_path(self, generate_account_request_payload):
+        core_model = ChartOfAccountsCore()
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
         payload = generate_account_request_payload
         payload = ChartOfAccountsModel(**payload).model_dump()
         where_clause_values = {
-            "<coa_id>": str(payload['id']).replace("-", ""),
-            "<coa_account_id>": payload['account_id'],
-            "<coa_name>": payload['name'],
-            "<coa_type>": payload['type'],
-            "<coa_description>": payload['description'],
+            "<coa_account_id>": payload[coa_meta.ACCOUNT_ID],
+            "<coa_name>": payload[coa_meta.NAME],
+            "<coa_type>": payload[coa_meta.TYPE],
+            "<coa_description>": payload[coa_meta.DESCRIPTION],
             "<coa_created_date>": current_datetime,
             "<coa_updated_date>": current_datetime
         }
         
-        account_insert_record(engine, payload)
+        core_model.insertRecord(payload)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Uniqueness Test", where_clause_values)
         db_obj = SQLiteClient(creds)
@@ -63,39 +42,27 @@ class TestAccountInsertRecord:
         del db_obj
 
         assert result.shape[0] == 1
-
-    @pytest.mark.parametrize("param", ["", "123", "abc"])
-    def test_invalid_connection(self, generate_account_request_payload, param):
-        expected = "Could not parse SQLAlchemy URL from given URL string"
-        payload = generate_account_request_payload
-        payload = ChartOfAccountsModel(**payload).model_dump()
-
-        connection_string = param
-        with pytest.raises(Exception) as excinfo:
-            account_insert_record(create_engine(connection_string, echo=True), payload)
-        logging.info(str(excinfo))
-        assert expected in str(excinfo)
 
     def test_duplicate_record_error(self, generate_account_request_payload):
         expected = "UNIQUE constraint failed"
+        core_model = ChartOfAccountsCore()
+
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
         payload = generate_account_request_payload
         payload = ChartOfAccountsModel(**payload).model_dump()
         where_clause_values = {
-            "<coa_id>": str(payload['id']).replace("-", ""),
-            "<coa_account_id>": payload['account_id'],
-            "<coa_name>": payload['name'],
-            "<coa_type>": payload['type'],
-            "<coa_description>": payload['description'],
+            "<coa_account_id>": payload[coa_meta.ACCOUNT_ID],
+            "<coa_name>": payload[coa_meta.NAME],
+            "<coa_type>": payload[coa_meta.TYPE],
+            "<coa_description>": payload[coa_meta.DESCRIPTION],
             "<coa_created_date>": current_datetime,
             "<coa_updated_date>": current_datetime
         }
 
-        account_insert_record(engine, payload)
+        core_model.insertRecord(payload)
         with pytest.raises(Exception) as excinfo:
-            account_insert_record(engine, payload)
-        logging.info(str(excinfo))
+            core_model.insertRecord(payload)
         assert expected in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Uniqueness Test", where_clause_values)
@@ -109,23 +76,21 @@ class TestAccountInsertRecord:
         assert result.shape[0] == 1
 
     @pytest.mark.parametrize("param", [1, -1, 1.11, -1.11, True, {'key', 1}, {'key': 1}, None])
-    def test_invalid_account_id_values_TypeError(self, generate_account_request_payload, param):
+    def test_invalid_account_id_values_Exception(self, generate_account_request_payload, param):
         expected = f"ChartOfAccountsModel Error: incorrect account ID data type '{type(param).__name__}'"
+        core_model = ChartOfAccountsCore()
 
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
         payload = generate_account_request_payload
         payload = ChartOfAccountsModel(**payload).model_dump()
         where_clause_values = {
-            "<coa_id>": str(payload['id']).replace("-", "")
+            "<coa_account_id>": payload[coa_meta.ACCOUNT_ID]
         }
-        payload['account_id'] = param
-        del payload["created_date"]
-        del payload["updated_date"]
+        payload[coa_meta.ACCOUNT_ID] = param
         
-        with pytest.raises(TypeError) as excinfo:
-            account_insert_record(engine, payload)
-        logging.info(str(excinfo))
+        with pytest.raises(Exception) as excinfo:
+            core_model.insertRecord(payload)
         assert expected in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values)
@@ -139,30 +104,30 @@ class TestAccountInsertRecord:
         assert result.shape[0] == 0
 
 
-    @pytest.mark.parametrize("param", ["", "1234", "1234567890123456"])
-    def test_invalid_account_id_values_ValidationError(self, generate_account_request_payload, param):
-        from pydantic import ValidationError
+    @pytest.mark.parametrize("param", ["", "1234", "1234567890123451234567890123456"])
+    def test_invalid_account_id_values_field_length_error(self, generate_account_request_payload, param):
+        core_model = ChartOfAccountsCore()
 
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
         payload = generate_account_request_payload
         payload = ChartOfAccountsModel(**payload).model_dump()
         where_clause_values = {
-            "<coa_id>": str(payload['id']).replace("-", "")
+            "<coa_account_id>": payload[coa_meta.ACCOUNT_ID]
         }
-        payload['account_id'] = param
-        del payload["created_date"]
-        del payload["updated_date"]
+        payload[coa_meta.ACCOUNT_ID] = param
+        del payload[coa_meta.CREATED_DATE]
+        del payload[coa_meta.UPDATED_DATE]
+        
+        error_code_one = "COA0002"
+        error_code_two = "COA0003"
+        with pytest.raises(Exception) as excinfo:
+            core_model.insertRecord(payload)
 
-        error_1 = "ChartOfAccountsModel Error: account ID minimum field length...ount_mapping': None}, input_type=dict]"
-        error_2 = "ChartOfAccountsModel Error: account ID maximum length is 15"
-        with pytest.raises(ValidationError) as excinfo:
-            account_insert_record(engine, payload)
-        logging.info(str(excinfo))
         if len(param) < 5:
-            assert error_1 in str(excinfo)
+            assert error_code_one in str(excinfo)
         else:
-            assert error_2 in str(excinfo)
+            assert error_code_two in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values)
         db_obj = SQLiteClient(creds)
@@ -175,23 +140,24 @@ class TestAccountInsertRecord:
         assert result.shape[0] == 0
 
     @pytest.mark.parametrize("param", [1, -1, 1.11, -1.11, True, {'key', 1}, {'key': 1}, None])
-    def test_invalid_account_name_values_TypeError(self, generate_account_request_payload, param):
+    def test_invalid_account_name_values_Exception(self, generate_account_request_payload, param):
         expected = f"ChartOfAccountsModel Error: incorrect account name data type '{type(param).__name__}'"
-
+        core_model = ChartOfAccountsCore()
+        
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
         payload = generate_account_request_payload
         payload = ChartOfAccountsModel(**payload).model_dump()
         where_clause_values = {
-            "<coa_id>": str(payload['id']).replace("-", "")
+            "<coa_account_id>": payload[coa_meta.ACCOUNT_ID]
         }
-        payload['name'] = param
-        del payload["created_date"]
-        del payload["updated_date"]
+        payload[coa_meta.NAME] = param
+        del payload[coa_meta.CREATED_DATE]
+        del payload[coa_meta.UPDATED_DATE]
 
-        with pytest.raises(TypeError) as excinfo:
-            account_insert_record(engine, payload)
-        logging.info(str(excinfo))
+        with pytest.raises(Exception) as excinfo:
+            core_model.insertRecord(payload)
+        
         assert expected in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values)
@@ -205,31 +171,31 @@ class TestAccountInsertRecord:
         assert result.shape[0] == 0
 
 
-    @pytest.mark.parametrize("param", ["", "ezxPOoQiJumfDGYvhtUwNcFerZklOFIfPrYABVtpkmVhCHwrCjGsw"])
-    def test_invalid_account_name_values_ValidationError(self, generate_account_request_payload, param):
-        from pydantic import ValidationError
+    @pytest.mark.parametrize("param", ["", "2647902066830292456314023255772735635300818039589536229964640280111382742403410796944455975648526778393253846437709638360033347483170939266852249670143"])
+    def test_invalid_account_name_values_field_length_error(self, generate_account_request_payload, param):
+        core_model = ChartOfAccountsCore()
         
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
         payload = generate_account_request_payload
         payload = ChartOfAccountsModel(**payload).model_dump()
         where_clause_values = {
-            "<coa_id>": str(payload['id']).replace("-", "")
+            "<coa_account_id>": payload[coa_meta.ACCOUNT_ID]
         }
-        payload['name'] = param
-        del payload["created_date"]
-        del payload["updated_date"]
+        payload[coa_meta.NAME] = param
+        del payload[coa_meta.CREATED_DATE]
+        del payload[coa_meta.UPDATED_DATE]
 
-        error_1 = "ChartOfAccountsModel Error: account name minimum length is ...ount_mapping': None}"
-        error_2 = "ChartOfAccountsModel Error: account name maximum length is ...ount_mapping': None}"
+        error_code_one = "COA0006"
+        error_code_two = "COA0005"
 
-        with pytest.raises(ValidationError) as excinfo:
-            account_insert_record(engine, payload)
-        logging.info(str(excinfo))
+        with pytest.raises(Exception) as excinfo:
+            core_model.insertRecord(payload)
+        
         if len(param) <= 0:
-            assert error_1 in str(excinfo)
+            assert error_code_one in str(excinfo)
         else:
-            assert error_2 in str(excinfo)
+            assert error_code_two in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values)
         db_obj = SQLiteClient(creds)
@@ -242,24 +208,25 @@ class TestAccountInsertRecord:
         assert result.shape[0] == 0
 
     @pytest.mark.parametrize("param", [1, -1, 1.11, -1.11, True, {'key', 1}, {'key': 1}, None])
-    def test_invalid_account_type_values_TypeError(self, generate_account_request_payload, param):
+    def test_invalid_account_type_values_Exception(self, generate_account_request_payload, param):
         expected = f"ChartOfAccountsModel Error: incorrect account type data type '{type(param).__name__}'"
+        core_model = ChartOfAccountsCore()
 
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
         payload = generate_account_request_payload
         payload = ChartOfAccountsModel(**payload).model_dump()
         where_clause_values = {
-            "<coa_id>": str(payload['id']).replace("-", "")
+            "<coa_account_id>": payload[coa_meta.ACCOUNT_ID]
         }
-        payload['type'] = param
-        del payload["created_date"]
-        del payload["updated_date"]
+        payload[coa_meta.TYPE] = param
+        del payload[coa_meta.CREATED_DATE]
+        del payload[coa_meta.UPDATED_DATE]
 
         
-        with pytest.raises(TypeError) as excinfo:
-            account_insert_record(engine, payload)
-        logging.info(str(excinfo))
+        with pytest.raises(Exception) as excinfo:
+            core_model.insertRecord(payload)
+        
         assert expected in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values) 
@@ -273,8 +240,8 @@ class TestAccountInsertRecord:
         assert result.shape[0] == 0
 
     @pytest.mark.parametrize("param", ["", "SAMPLE", "DISBURSEMENT", "asset", "liability"])
-    def test_invalid_account_type_values_ValidationError(self, generate_account_request_payload, param):
-        from pydantic import ValidationError
+    def test_invalid_account_type_values_invalid_account_type(self, generate_account_request_payload, param):
+        core_model = ChartOfAccountsCore()
 
         expected = "Error: Unknown account type"
         current_datetime = datetime.now(timezone.utc)
@@ -282,15 +249,15 @@ class TestAccountInsertRecord:
         payload = generate_account_request_payload
         payload = ChartOfAccountsModel(**payload).model_dump()
         where_clause_values = {
-            "<coa_id>": str(payload['id']).replace("-", "")
+            "<coa_account_id>": payload[coa_meta.ACCOUNT_ID]
         }
-        payload['type'] = param
-        del payload["created_date"]
-        del payload["updated_date"]
+        payload[coa_meta.TYPE] = param
+        del payload[coa_meta.CREATED_DATE]
+        del payload[coa_meta.UPDATED_DATE]
 
-        with pytest.raises(ValidationError) as excinfo:
-            account_insert_record(engine, payload)
-        logging.info(str(excinfo))
+        with pytest.raises(Exception) as excinfo:
+            core_model.insertRecord(payload)
+        
         assert expected in str(excinfo)
 
         contents = load_mapped_sql_files("Chart Of Accounts", "Search By ID", where_clause_values)
