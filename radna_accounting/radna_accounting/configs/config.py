@@ -19,7 +19,7 @@ class LoggerType():
 
 logger_types = LoggerType()
 
-def loggerOutput(rrn=None, method = logger_types.INFO, message = ""):
+def loggerOutput(rrn: str = None, method: str = logger_types.INFO, message: str = ""):
     rrn = str(uuid4()) if rrn is None else rrn
     logger_type_map = {
         logger_types.INFO: logger.info,

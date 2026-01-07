@@ -37,7 +37,7 @@ class ChartOfAccountsCore:
         self.engine = engine
         self.rrn = rrn
 
-    def insertRecord(self, obj) -> None:
+    def insertRecord(self, obj: dict) -> None:
         new_record = None
         with self.engine.connect() as conn:
             loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.INSERT_RECORD} - Start Insert Account Record {obj}")
@@ -52,7 +52,7 @@ class ChartOfAccountsCore:
             conn.execute(insert_statement)
             conn.commit()
     
-    def selectRecordById(self, account_id) -> dict:
+    def selectRecordById(self, account_id: str) -> dict:
         validator = None
         result = None
 
@@ -73,7 +73,7 @@ class ChartOfAccountsCore:
         loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.SELECT_RECORD_BY_ID} - Done Select Record By ID")
         return result
     
-    def selectRecordByName(self, name) -> dict:
+    def selectRecordByName(self, name: str) -> dict:
         validator = None
         result = None
         
@@ -93,7 +93,7 @@ class ChartOfAccountsCore:
         loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.SELECT_RECORD_BY_NAME} - Start Select Record By Name")
         return result
     
-    def updateRecordById(self, account_id, obj) -> None:
+    def updateRecordById(self, account_id: str, obj: dict) -> None:
         loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.UPDATE_RECORD_BY_ID} - Start Update Account Record: {account_id}")
         record = copy.deepcopy(obj)
         record[coa_meta.ACCOUNT_ID] = account_id
@@ -119,7 +119,7 @@ class ChartOfAccountsCore:
             )
             raise Exception(error)
     
-    def deleteRecordById(self, account_id) -> None:
+    def deleteRecordById(self, account_id: str) -> None:
         loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.DELETE_RECORD_BY_ID} - Start Delete Account Record: {account_id}")
         with self.engine.connect() as conn:
             delete_statement = chart_of_accounts\
