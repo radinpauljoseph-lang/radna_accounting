@@ -43,6 +43,7 @@ def createAccountRequest(request):
     error_model = ErrorModel().model_dump()
     result = {}
     rrn = None
+    controller = None
 
     try:
         method = request.method
@@ -78,16 +79,19 @@ def createAccountRequest(request):
     except Exception as e:
         loggerOutput(method=logger_types.ERROR, message=f"{coa_request_meta.CREATE_ACCOUNT_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
+        del controller
         loggerOutput(message=f"{coa_request_meta.CREATE_ACCOUNT_REQUEST} - DONE: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
         return JsonResponse(result, status=CREATED_RESPONSE_CODE)
     
 @csrf_exempt
-def getUpdateAccountRequest(request, id = None):
+def getUpdateAccountRequest(request, id: str = None):
     error_model = ErrorModel().model_dump()
     result = {}
     rrn = None
+    controller = None
+
     try:
         if not checkRequiredValidators(request.headers, required_headers):
             error = copy.deepcopy(error_map.get(f"{WEB_CODE}0001"))
@@ -98,7 +102,6 @@ def getUpdateAccountRequest(request, id = None):
             raise Exception(error)
         
         rrn = request.headers.get(REQUEST_REFERENCE_NUMBER)
-
         if id is None:
             error = copy.deepcopy(error_map.get(f"{COA_CODE}0107"))
             result = error
@@ -128,8 +131,9 @@ def getUpdateAccountRequest(request, id = None):
             raise Exception(error)
         
     except Exception as e:
-        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"get_update_account_request - Caught something: {type(e).__name__} -> {e}")
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{coa_request_meta.GET_UPDATE_ACCOUNT_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
+        del controller
         loggerOutput(message=f"get_update_account_request - DONE: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])

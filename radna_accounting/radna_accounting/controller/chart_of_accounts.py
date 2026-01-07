@@ -33,7 +33,7 @@ class ChartOfAccountsController:
         self.rrn = rrn
 
     @catchAndLog(Exception)
-    def createAccount(self, obj) -> dict:
+    def createAccount(self, obj: dict) -> dict:
         loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.CREATE_ACCOUNT} - Start Creating Account")
         return_data = {}
         account_obj = self.validator_model(**obj)
@@ -51,12 +51,14 @@ class ChartOfAccountsController:
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                     account_mapping=record[coa_meta.ACCOUNT_MAPPING]
                 )
+                del core_model
                 raise Exception(error)
                     
             core_model.insertRecord(record)
             record = core_model.selectRecordById(record[coa_meta.ACCOUNT_ID])
             return_data = record
         else:
+            del core_model
             if account_name_exists:
                 error = copy.deepcopy(error_map.get(f"{COA_CODE}0103"))
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
@@ -71,10 +73,11 @@ class ChartOfAccountsController:
                 raise Exception(error)
             
         loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.CREATE_ACCOUNT} - Done Creating Account")
+        del core_model
         return return_data
     
     @catchAndLog(Exception)
-    def updateAccount(self, id, obj) -> dict:
+    def updateAccount(self, id: str, obj: dict) -> dict:
         return_data = {}
         allowed_fields = [
             coa_meta.NAME,
@@ -84,14 +87,15 @@ class ChartOfAccountsController:
         ]
 
         loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.UPDATE_ACCOUNT} - Start Updating Account")  
-        temp_obj = copy.deepcopy(obj)
-        temp_obj[coa_meta.ACCOUNT_ID] = id
-        account_obj = self.validator_model(**temp_obj)
-        account_obj = account_obj.model_dump()
         core_model = self.core_model(self.rrn)
 
         account_id_exists = core_model.selectRecordById(id)
         if account_id_exists:
+            temp_obj = copy.deepcopy(obj)
+            temp_obj[coa_meta.ACCOUNT_ID] = id
+            account_obj = self.validator_model(**temp_obj)
+            account_obj = account_obj.model_dump()
+
             record = copy.deepcopy(account_id_exists[DATA_KEY])
             record[coa_meta.ACCOUNT_MAPPING] = account_obj[coa_meta.ACCOUNT_MAPPING]
             record = self.validator_model(**record)
@@ -102,6 +106,7 @@ class ChartOfAccountsController:
                     error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                         key=key
                     )
+                    del core_model
                     raise Exception(error)
             if account_obj[coa_meta.NAME] != record[coa_meta.NAME]:
                 account_name_exists = core_model.selectRecordByName(account_obj[coa_meta.NAME])
@@ -110,6 +115,7 @@ class ChartOfAccountsController:
                     error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                         account_name=account_obj[coa_meta.NAME]
                     )
+                    del core_model
                     raise Exception(error)
             
             account_mapping_id_exists = core_model.selectRecordById(record[coa_meta.ACCOUNT_MAPPING])
@@ -118,6 +124,7 @@ class ChartOfAccountsController:
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                     account_mapping=record[coa_meta.ACCOUNT_MAPPING]
                 )
+                del core_model
                 raise Exception(error)
                 
             for key in account_obj.keys():
@@ -133,11 +140,13 @@ class ChartOfAccountsController:
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 account_id=id
             )
+            del core_model
             raise Exception(error)
+        del core_model
         return return_data
     
     @catchAndLog(Exception)
-    def getAccount(self, id) -> dict:
+    def getAccount(self, id: str) -> dict:
         return_data = {}
         core_model = self.core_model(self.rrn)
         loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.GET_ACCOUNT} - Start Get Account")  
@@ -149,8 +158,10 @@ class ChartOfAccountsController:
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 account_id=id
             )
+            del core_model
             raise Exception(error)
         loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.GET_ACCOUNT} - Done Get Account")  
+        del core_model
         return return_data
 
         
