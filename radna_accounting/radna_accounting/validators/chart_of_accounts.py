@@ -1,6 +1,7 @@
-from pydantic import BaseModel, model_validator
 import copy
 from datetime import datetime
+from pydantic import BaseModel, model_validator
+
 from ..models.chart_of_accounts import (
     coa_meta,
     coa_types
@@ -139,7 +140,7 @@ class ChartOfAccountsModel(BaseModel):
         return values
     
     @model_validator(mode="before")
-    def created_date_validator(cls, values):
+    def created_date_converter(cls, values):
         if coa_meta.CREATED_DATE in values.keys():
             created_date = values[coa_meta.CREATED_DATE]
             if created_date is not None:
@@ -148,7 +149,7 @@ class ChartOfAccountsModel(BaseModel):
         return values
     
     @model_validator(mode="before")
-    def updated_date_validator(cls, values):
+    def updated_date_converter(cls, values):
         if coa_meta.UPDATED_DATE in values.keys():
             updated_date = values['updated_date']
             if updated_date is not None:

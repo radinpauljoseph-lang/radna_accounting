@@ -1,76 +1,136 @@
+import copy
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
 from ..configs.config import (
     logger_types,
     loggerOutput
 )
-from ..utils.decorators.error_handling import catchAndLog
 from ..configs.response_codes.error_model import ErrorModel
-from ..configs.response_codes.mapping import STATUS_KEY
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
+from ..configs.response_codes.mapping import (
+    WEB_CODE,
+    COA_CODE,
+    MESSAGE_KEY,
+    STATUS_KEY,
+    error_map
+)
+
 from ..controller.chart_of_accounts import ChartOfAccountsController
+from .request_details.constants import (
+    UTF_8,
+    REQUEST_REFERENCE_NUMBER,
+    POST_METHOD,
+    GET_METHOD,
+    PUT_METHOD,
+    DELETE_METHOD,
+    OK_RESPONSE_CODE,
+    CREATED_RESPONSE_CODE
+)
+from .request_details.request_validators import checkRequiredValidators
+
+class ChartOfAccountsRequestMetaData:
+    def __init__(self):
+        self.CREATE_ACCOUNT_REQUEST = "createAccountRequest"
+        self.GET_UPDATE_ACCOUNT_REQUEST = "getUpdateAccountRequest"
+
+coa_request_meta = ChartOfAccountsRequestMetaData()
+
+required_headers = [REQUEST_REFERENCE_NUMBER]
 
 @csrf_exempt
-def create_account_request(request):
-    controller = ChartOfAccountsController() 
-    result = {}
-    try:
-        method = request.method
-        if method == "POST":
-            json_str = request.body.decode("utf-8")
-            data = json.loads(json_str)
-
-            result = controller.create_account(data)
-            
-        else:
-            result = {
-                "error": f"create_account_request - Method {request.method} is not supported" 
-            }
-    except Exception as e:
-        loggerOutput(method=logger_types.ERROR, message=f"create_account_request - Caught something: {type(e).__name__} -> {e}")
-        result = {
-            "error": str(e)
-        }
-    finally:
-        loggerOutput(message=f"create_account_request - {result}")
-        if 'error' in result:
-            return JsonResponse(result, status=400)
-        else:
-            return JsonResponse(result)
-    
-@csrf_exempt
-def get_update_account_request(request, id = None):
+def createAccountRequest(request):
     error_model = ErrorModel().model_dump()
     result = {}
+    rrn = None
+
     try:
-        rrn = request.headers.get("Request-Reference-Number")
-        if id is None:
-            result = {
-                "error": "get_update_account_request - Account ID required"
-            }
-            loggerOutput(rrn=rrn, method=logger_types.ERROR, message=result)
         method = request.method
-        controller = ChartOfAccountsController(rrn) 
-        if method == "GET":
-            result = controller.get_account(id)
-        elif method == "PUT":
-            json_str = request.body.decode("utf-8")
+        if method == POST_METHOD:
+            if not checkRequiredValidators(request.headers, required_headers):
+                error = copy.deepcopy(error_map.get(f"{WEB_CODE}0001"))
+                error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                    header=', '.join(required_headers)
+                )
+                result = error
+                raise Exception(error)
+            
+            rrn = request.headers.get(REQUEST_REFERENCE_NUMBER)
+
+            json_str = request.body.decode(UTF_8)
             data = json.loads(json_str)
-            result = controller.update_account(id, data)
+            controller = ChartOfAccountsController(rrn) 
+
+            result = controller.createAccount(data)
+
             if type(result) is dict:
                 if set(result) == set(error_model):
                     raise Exception(result)
         else:
-            result = {
-                "error": f"get_update_account_request - Method {request.method} is not supported" 
-            }
-            loggerOutput(rrn=rrn, method=logger_types.ERROR, message=result)
+            loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{coa_request_meta.CREATE_ACCOUNT_REQUEST} - Unsupported Request Method")
+            error = copy.deepcopy(error_map.get(f"{WEB_CODE}0002"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                method=method
+            )
+            result = error
+            raise Exception(error)
+        
+    except Exception as e:
+        loggerOutput(method=logger_types.ERROR, message=f"{coa_request_meta.CREATE_ACCOUNT_REQUEST} - Caught something: {type(e).__name__} -> {e}")
+    finally:
+        loggerOutput(message=f"{coa_request_meta.CREATE_ACCOUNT_REQUEST} - DONE: {result}")
+        if set(result) == set(error_model):
+            return JsonResponse(result, status=result[STATUS_KEY])
+        return JsonResponse(result, status=CREATED_RESPONSE_CODE)
+    
+@csrf_exempt
+def getUpdateAccountRequest(request, id = None):
+    error_model = ErrorModel().model_dump()
+    result = {}
+    rrn = None
+    try:
+        if not checkRequiredValidators(request.headers, required_headers):
+            error = copy.deepcopy(error_map.get(f"{WEB_CODE}0001"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                header=', '.join(required_headers)
+            )
+            result = error
+            raise Exception(error)
+        
+        rrn = request.headers.get(REQUEST_REFERENCE_NUMBER)
+
+        if id is None:
+            error = copy.deepcopy(error_map.get(f"{COA_CODE}0107"))
+            result = error
+            raise Exception(error)
+        
+        method = request.method
+        controller = ChartOfAccountsController(rrn) 
+        if method == GET_METHOD:
+            result = controller.getAccount(id)
+            if type(result) is dict:
+                if set(result) == set(error_model):
+                    raise Exception(result)
+        elif method == PUT_METHOD:
+            json_str = request.body.decode(UTF_8)
+            data = json.loads(json_str)
+            result = controller.updateAccount(id, data)
+            if type(result) is dict:
+                if set(result) == set(error_model):
+                    raise Exception(result)
+        else:
+            loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{coa_request_meta.GET_UPDATE_ACCOUNT_REQUEST} - Unsupported Request Method")
+            error = copy.deepcopy(error_map.get(f"{WEB_CODE}0002"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                method=method
+            )
+            result = error
+            raise Exception(error)
+        
     except Exception as e:
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"get_update_account_request - Caught something: {type(e).__name__} -> {e}")
     finally:
         loggerOutput(message=f"get_update_account_request - DONE: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
-        elif 'error' in result:
-            return JsonResponse(result, status=400)
-        return JsonResponse(result)
+        return JsonResponse(result, status=OK_RESPONSE_CODE)

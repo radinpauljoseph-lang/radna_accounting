@@ -1,4 +1,3 @@
-from sqlalchemy import MetaData
 import logging
 from uuid import uuid4
 from datetime import datetime, timezone

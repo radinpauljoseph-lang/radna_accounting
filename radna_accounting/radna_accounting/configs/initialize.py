@@ -1,3 +1,4 @@
+from sqlalchemy import inspect
 from .config import (
     loggerOutput,
     meta,
@@ -18,7 +19,6 @@ from ..models.accounting_periods import (
 from ..models.transaction_id_tracker import (
     transaction_id_tracker
 )
-from sqlalchemy import inspect
 
 table_definitions = [
     chart_of_accounts.name,

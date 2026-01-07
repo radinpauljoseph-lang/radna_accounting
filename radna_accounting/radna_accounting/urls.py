@@ -8,8 +8,8 @@ from .views import (
 )
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("accounts", chart_of_accounts.create_account_request),
-    path("accounts/<str:id>", chart_of_accounts.get_update_account_request),
+    path("accounts", chart_of_accounts.createAccountRequest),
+    path("accounts/<str:id>", chart_of_accounts.getUpdateAccountRequest),
     path("journal-entry", journal_entry.create_journal_entry_request),
     path("journal-entry/<str:id>", journal_entry.get_update_journal_entry_request),
     path("journal-entry/transaction-id/<str:transaction_id>", journal_entry.get_delete_journal_entry_by_transaction_id_request),

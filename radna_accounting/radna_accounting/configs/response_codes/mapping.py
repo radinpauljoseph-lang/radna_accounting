@@ -1,5 +1,6 @@
 from .error_model import ErrorModel
 COA_CODE = "COA"
+WEB_CODE = "WEB"
 SYS_CODE = "SYS"
 MESSAGE_KEY = "message"
 CODE_KEY = "code"
@@ -111,7 +112,39 @@ error_map = {
         message="Account Map \'{account_mapping}\' Not Found",
         details=None
     ).model_dump(),
-    
+    f"{COA_CODE}0105": ErrorModel(
+        status=400,
+        code=f"{COA_CODE}0105",
+        message="Account ID \'{account_id}\' already exists",
+        details=None
+    ).model_dump(),
+    f"{COA_CODE}0106": ErrorModel(
+        status=400,
+        code=f"{COA_CODE}0106",
+        message="Account ID \'{account_id}\' Not Found",
+        details=None
+    ).model_dump(),
+    f"{COA_CODE}0107": ErrorModel(
+        status=400,
+        code=f"{COA_CODE}0107",
+        message="Account ID required",
+        details=None
+    ).model_dump(),
+
+    # API Request
+    f"{WEB_CODE}0001": ErrorModel(
+        status=400,
+        code=f"{WEB_CODE}0001",
+        message="Missing headers: {header}",
+        details=None
+    ).model_dump(),
+    f"{WEB_CODE}0002": ErrorModel(
+        status=400,
+        code=f"{WEB_CODE}0002",
+        message="Request Method \'{method}\' not supported",
+        details=None
+    ).model_dump(),
+
     # Default
     f"{SYS_CODE}400": ErrorModel(
         status=400,

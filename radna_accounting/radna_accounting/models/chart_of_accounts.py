@@ -1,6 +1,7 @@
 import uuid
 from sqlalchemy import Table, Column, String, DateTime
 from sqlalchemy.sql import text
+
 from ..configs.config import(
     CONFIGS,
     ENV,
