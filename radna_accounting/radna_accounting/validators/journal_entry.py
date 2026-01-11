@@ -4,34 +4,27 @@ import uuid
 import re
 from uuid import UUID
 from ..models.journal_entry import (
+    je_meta,
     je_status,
     je_types
 )
 
 model_name = "JournalEntryModel"
-transaction_types = [
-    je_types.CREDIT,
-    je_types.DEBIT
-]
+transaction_types = je_types.getEntryTypesAsList()
 
-allowed_status = [
-    je_status.NEW,
-    je_status.POSTED,
-    je_status.REJECTED,
-    je_status.APPROVED
-]
+allowed_status = je_status.getStatusAsList()
 
 class JournalEntryModel(BaseModel):
     id: str | UUID | None = None
     transaction_id: str | None = None
     transaction_date: str | datetime | None = None
-    account_number: str | None = None
-    description: str | None = None
-    entry_type: str | None = None
-    amount: float | None = None
     currency_code: str | None = None
-    posting_date: str | datetime | None = None
     status: str | None = None
+    account_number: str | None = None
+    entry_type: str | None = None
+    description: str | None = None
+    amount: float | None = None
+    posting_date: str | datetime | None = None
     created_date: str | datetime | None = None
     updated_date: str | datetime | None = None
 
@@ -198,3 +191,21 @@ class JournalEntryModel(BaseModel):
                 else:
                     values['updated_date'] = datetime.strptime(updated_date, "%Y-%m-%d %H:%M:%S.%f")
         return values
+
+
+class JournalEntryHistoryModel(BaseModel):
+    id: str | UUID | None = None
+    transaction_id: str | None = None
+    transaction_date: str | datetime | None = None
+    currency_code: str | None = None
+    status: str | None = None
+    account_number: str | None = None
+    entry_type: str | None = None
+    description: str | None = None
+    amount: float | None = None
+    posting_date: str | datetime | None = None
+    history_id: str | UUID | None = None
+    history_date: str | datetime | None = None
+    history_operation: str | None = None
+    created_date: str | datetime | None = None
+    updated_date: str | datetime | None = None
