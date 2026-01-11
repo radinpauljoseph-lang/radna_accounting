@@ -1,12 +1,20 @@
 from pydantic import BaseModel, model_validator
 from datetime import datetime, date
 import uuid
+import copy
 import re
 from uuid import UUID
+from ..models.chart_of_accounts import coa_meta
 from ..models.journal_entry import (
     je_meta,
     je_status,
     je_types
+)
+
+from ..configs.response_codes.mapping import (
+    COA_CODE,
+    MESSAGE_KEY,
+    error_map
 )
 
 model_name = "JournalEntryModel"
@@ -28,28 +36,36 @@ class JournalEntryModel(BaseModel):
     created_date: str | datetime | None = None
     updated_date: str | datetime | None = None
 
+    # add & replace error code for JE
     @model_validator(mode="before")
     def id_validator(cls, values):
-        error_message = f"{model_name} Error: id field is not a valid UUID"
-        if 'id' in values.keys():
-            id = values['id']
+        if je_meta.ID in values.keys():
+            id = values[je_meta.ID]
             if isinstance(id, str):
                 try:
                     return uuid.UUID(id).version == 4
                 except (ValueError, TypeError):
-                    raise ValueError(error_message)
+                    error_message = f"{model_name} Error: id field is not a valid UUID"
+                    error = copy.deepcopy(error_map.get(f"{COA_CODE}0001"))
+                    error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                        model_name=model_name
+                    )
+                    raise Exception(error)
             else:
                 if id is not None and not isinstance(id, UUID):
-                    raise TypeError(error_message)
-        else:
-            values['id'] = None
+                    error_message = f"{model_name} Error: id field is not a valid UUID"
+                    error = copy.deepcopy(error_map.get(f"{COA_CODE}0001"))
+                    error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                        model_name=model_name
+                    )
+                    raise Exception(error)
         return values
 
 
     @model_validator(mode="before")
     def transaction_id_validator(cls, values):
-        if 'transaction_id' in values.keys():
-            transaction_id = values['transaction_id']
+        if je_meta.TRANSACTION_ID in values.keys():
+            transaction_id = values[je_meta.TRANSACTION_ID]
             if transaction_id is not None and not isinstance(transaction_id, str):
                 raise TypeError(f"{model_name} Error: incorrect transaction ID data type \'{type(transaction_id).__name__}\'")
             if transaction_id is not None and len(transaction_id) <= 0:
@@ -64,19 +80,17 @@ class JournalEntryModel(BaseModel):
                     month = transaction_id[4:6]
                     if int(year) < 1000  or int(year) > 9999:
                         raise ValueError(f"{model_name} Error: year in transaction ID is not a valid year")
-                    if 1 > int(month)  or int(month) > 12:
+                    if 1 > int(month) or int(month) > 12:
                         raise ValueError(f"{model_name} Error: year in transaction ID is not a valid month")
                 else:
-                    values['transaction_id'] = None
-        else:
-            values['transaction_id'] = None
+                    values[je_meta.TRANSACTION_ID] = None
         return values
     
     @model_validator(mode="before")
     def transaction_date_validator(cls, values):
-        transaction_date = values['transaction_date']
+        transaction_date = values[je_meta.TRANSACTION_DATE]
         if isinstance(transaction_date, date):
-            values['transaction_date'] = transaction_date.strftime("%Y-%m-%d")
+            values[je_meta.TRANSACTION_DATE] = transaction_date.strftime("%Y-%m-%d")
         elif isinstance(transaction_date, str):
             if not re.search("^\d{4}-\d{2}-\d{2}\Z", transaction_date):
                 raise ValueError(f"{model_name} Error: transaction date not in proper format")
@@ -89,20 +103,35 @@ class JournalEntryModel(BaseModel):
             raise TypeError(f"{model_name} Error: transaction date invalid type")
         return values
     
+    # remove model name interpolation to all error codes
     @model_validator(mode="before")
     def account_number_validator(cls, values):
-        account_number = values['account_number']
-        if not isinstance(account_number, str):
-            raise TypeError(f"{model_name} Error: incorrect account ID data type \'{type(account_number).__name__}\'")
-        if len(account_number) < 5:
-            raise ValueError(f"{model_name} Error: account number minimum field length not met")
-        if len(account_number) > 15:
-            raise ValueError(f"{model_name} Error: account number maximum length is 15")
+        account_id = values[coa_meta.ACCOUNT_ID]
+        if not isinstance(account_id, str):
+            error = copy.deepcopy(error_map.get(f"{COA_CODE}0001"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                model_name=model_name,
+                variable_type=type(account_id).__name__
+            )
+            raise Exception(error)
+        if len(account_id) < coa_meta.ACCOUNT_ID_MIN_LENGTH:
+            error = copy.deepcopy(error_map.get(f"{COA_CODE}0002"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                model_name=model_name
+            )
+            raise Exception(error)
+        if len(account_id) > coa_meta.ACCOUNT_ID_LENGTH:
+            error = copy.deepcopy(error_map.get(f"{COA_CODE}0003"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                model_name=model_name,
+                account_id_length=coa_meta.ACCOUNT_ID_LENGTH
+            )
+            raise Exception(error)
         return values
     
     @model_validator(mode="before")
     def entry_type_validator(cls, values):
-        entry_type = values['entry_type']
+        entry_type = values[je_meta.ENTRY_TYPE]
         if not isinstance(entry_type, str):
             raise TypeError(f"{model_name} Error: incorrect entry type data type \'{type(entry_type).__name__}\'")
         if entry_type not in transaction_types:
@@ -111,63 +140,59 @@ class JournalEntryModel(BaseModel):
     
     @model_validator(mode="before")
     def description_validator(cls, values):
-        if 'description' in values.keys():
-            description = values['description']
+        if je_meta.DESCRIPTION in values.keys():
+            description = values[je_meta.DESCRIPTION]
             if not isinstance(description, str) and description is not None:
                 raise TypeError(f"{model_name} Error: incorrect description data type \'{type(description).__name__}\'")
-            if description is not None and len(description) > 50:
-                raise ValueError(f"{model_name} Error: description field maximum length is 50")
+            if description is not None and len(description) > je_meta.DESCRIPTION_LENGTH:
+                raise ValueError(f"{model_name} Error: description field maximum length is {je_meta.DESCRIPTION_LENGTH}")
         return values
     
     @model_validator(mode="before")
     def amount_validator(cls, values):
-        amount = values['amount']
+        amount = values[je_meta.AMOUNT]
         if isinstance(amount, str):
             raise TypeError(f"{model_name} Error: incorrect amount data type \'{type(amount).__name__}\'")
         return values
     
     @model_validator(mode="before")
     def currency_code_validator(cls, values):
-        if 'currency_code' in values.keys():
-            currency_code = values['currency_code']
-            if len(currency_code) != 3:
-                raise ValueError(f"{model_name} Error: currency code required length is 3")
+        if je_meta.CURRENCY_CODE in values.keys():
+            currency_code = values[je_meta.CURRENCY_CODE_LENGTH]
+            if len(currency_code) != je_meta.CURRENCY_CODE_LENGTH:
+                raise ValueError(f"{model_name} Error: currency code required length is {je_meta.CURRENCY_CODE_LENGTH}")
             if currency_code != "PHP":
                 raise ValueError(f"{model_name} Error: invalid currency code \'{currency_code}\'")
-        else:
-            values['currency_code'] = "PHP"
         return values
 
     @model_validator(mode="before")
     def posting_date_validator(cls, values):
-        if 'posting_date' in values.keys():
-            posting_date = values['posting_date']
+        if je_meta.POSTING_DATE in values.keys():
+            posting_date = values[je_meta.POSTING_DATE]
             if isinstance(posting_date, date):
-                values['posting_date'] = posting_date.strftime("%Y-%m-%d")
+                values[je_meta.POSTING_DATE] = posting_date.strftime("%Y-%m-%d")
             elif isinstance(posting_date, str):
                 if not re.search("^\d{4}\d{2}\-\d{5}\Z", posting_date):
                     raise ValueError(f"{model_name} Error: posting date not in proper format")
                 else:
                     try:
-                        values['posting_date'] = datetime.strptime(posting_date, "%Y-%m-%d").date()
+                        values[je_meta.POSTING_DATE] = datetime.strptime(posting_date, "%Y-%m-%d").date()
                     except ValueError:
                         raise ValueError(f"{model_name} Error: invalid posting date")
             elif isinstance(posting_date, type(None)):
-                values['posting_date'] = None
+                values[je_meta.POSTING_DATE] = None
             else:
                 raise TypeError(f"{model_name} Error: posting date invalid type")
         else:
-            values['posting_date'] = None
+            values[je_meta.POSTING_DATE] = None
         return values
     
     @model_validator(mode="before")
     def status_validator(cls, values):
-        if 'status' in values.keys():
-            status = values['status']
+        if je_meta.STATUS in values.keys():
+            status = values[je_meta.STATUS]
             if not isinstance(status, type(None)) and status not in allowed_status:
                 raise ValueError(f"{model_name} Error: invalid status \'{status}\'")
-        else:
-            values['status'] = None
         return values
     
     @model_validator(mode="before")
