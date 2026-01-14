@@ -1,5 +1,6 @@
 from .error_model import ErrorModel
 COA_CODE = "COA"
+JNE_CODE = "JNE"
 WEB_CODE = "WEB"
 SYS_CODE = "SYS"
 MESSAGE_KEY = "message"
@@ -128,6 +129,74 @@ error_map = {
         status=400,
         code=f"{COA_CODE}0107",
         message="Account ID required",
+        details=None
+    ).model_dump(),
+
+    # Journal Entry
+    f"{JNE_CODE}0001": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0001",
+        message="Incorrect Journal Entry ID is not a valid UUID",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0002": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0002",
+        message="Incorrect transaction ID data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0003": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0003",
+        message="Transaction ID should not be empty",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0004": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0004",
+        message="Transaction ID maximum length is {transaction_id_length}",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0005": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0005",
+        message="Transaction ID not in proper format",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0006": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0006",
+        message="Year in Transaction ID is not a valid year",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0007": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0007",
+        message="Month in Transaction ID is not a valid month",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0008": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0008",
+        message="Journal Entry ID is required",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0009": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0009",
+        message="Transaction ID is required",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0010": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0010",
+        message="Transaction Date not in proper format",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0011": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0011",
+        message="Incorrect Transaction Date data type \'{variable_type}\'",
         details=None
     ).model_dump(),
 

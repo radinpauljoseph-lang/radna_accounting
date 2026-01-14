@@ -8,7 +8,6 @@ from ...configs.config  import (
     logger
 )
 from ...models.journal_entry import journal_entry
-from ...models.journal_entry_history import journal_entry_history
 from ...validators.journal_entry import JournalEntryModel
 
 def je_record_value_validate(engine, column_name, value, check_count = False) -> bool:
@@ -137,13 +136,8 @@ def je_insert_record(engine, obj) -> None:
             .insert()\
             .values(**new_record)
         loggerOutput(message=f"je_insert_record - Insert Account Record {obj}")
-
-        history_insert_statement =journal_entry_history\
-            .insert()\
-            .values(**new_record)
         
         conn.execute(insert_statement)
-        conn.execute(history_insert_statement)
         conn.commit()
 
 def je_update_record(engine, je_id, obj) -> None:

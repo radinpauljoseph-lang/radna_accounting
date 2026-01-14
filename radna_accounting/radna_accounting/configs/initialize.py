@@ -10,9 +10,6 @@ from ..models.chart_of_accounts import (
 from ..models.journal_entry import (
     journal_entry
 )
-from ..models.journal_entry_history import (
-    journal_entry_history
-)
 from ..models.accounting_periods import (
     accounting_periods
 )
@@ -23,7 +20,6 @@ from ..models.transaction_id_tracker import (
 table_definitions = [
     chart_of_accounts.name,
     journal_entry.name,
-    journal_entry_history.name,
     accounting_periods.name,
     transaction_id_tracker.name
 ]
