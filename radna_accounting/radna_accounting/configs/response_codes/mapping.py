@@ -1,6 +1,7 @@
 from .error_model import ErrorModel
 COA_CODE = "COA"
 JNE_CODE = "JNE"
+HIS_CODE = "HIS"
 WEB_CODE = "WEB"
 SYS_CODE = "SYS"
 MESSAGE_KEY = "message"
@@ -197,6 +198,104 @@ error_map = {
         status=400,
         code=f"{JNE_CODE}0011",
         message="Incorrect Transaction Date data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0012": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0012",
+        message="Unknown entry type \'{entry_type}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0013": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0013",
+        message="Incorrect entry type data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0014": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0014",
+        message="Incorrect description data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0015": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0015",
+        message="Description field maximum length is {description_length}",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0015": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0015",
+        message="Description field maximum length is {description_length}",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0016": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0016",
+        message="Incorrect amount data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0017": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0017",
+        message=" Currency Code required length is {currency_code_length}",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0018": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0018",
+        message="invalid currency code \'{currency_code}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0019": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0018",
+        message="Incorrect Currency Code data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0020": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0020",
+        message="Posting Date not in proper format",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0021": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0021",
+        message="Incorrect Posting Date data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0022": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0022",
+        message="Invalid Posting Date \'{posting_date}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0023": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0023",
+        message="Invalid Transaction Date \'{transaction_date}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0024": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0024",
+        message="Unknown status \'{status}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0025": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0025",
+        message="Incorrect status data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+
+    # History Tables
+    f"{JNE_CODE}{HIS_CODE}0001": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}{HIS_CODE}0001",
+        message="Unknown History Operation \'{history_operation}\'",
         details=None
     ).model_dump(),
 
