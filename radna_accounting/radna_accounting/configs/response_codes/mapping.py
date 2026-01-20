@@ -96,6 +96,12 @@ error_map = {
         message="Account ID \'{account_id}\' does not exist",
         details=None
     ).model_dump(),
+    f"{JNE_CODE}{COA_CODE}0101": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}{COA_CODE}0101",
+        message="Account ID \'{account_id}\' does not exist",
+        details=None
+    ).model_dump(),
     f"{COA_CODE}0102": ErrorModel(
         status=400,
         code=f"{COA_CODE}0102",
@@ -288,6 +294,30 @@ error_map = {
         status=400,
         code=f"{JNE_CODE}0025",
         message="Incorrect status data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0026": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0026",
+        message="Journal Entry ID does not exist",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0101": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0101",
+        message="\'{key}\' field not allowed",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0101": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0101",
+        message="\'{key}\' field not allowed",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0102": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0102",
+        message="Journal Entry ID already exists",
         details=None
     ).model_dump(),
 

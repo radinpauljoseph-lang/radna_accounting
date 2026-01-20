@@ -109,7 +109,7 @@ journal_entry = Table(
 journal_entry_history = Table(
     je_meta.HISTORY_TABLE_NAME,
     meta,
-    Column(je_meta.ID, UUID(as_uuid=True), primary_key=True, unique=True, nullable=False),
+    Column(je_meta.ID, UUID(as_uuid=True), primary_key=False, unique=False, nullable=False),
     Column(je_meta.TRANSACTION_ID, String(je_meta.TRANSACTION_ID_LENGTH), unique=False, nullable=False),
     Column(
         je_meta.TRANSACTION_DATE,
@@ -127,7 +127,7 @@ journal_entry_history = Table(
         Date,
         nullable=True
     ),
-    Column(je_meta.HISTORY_ID, UUID(as_uuid=True), primary_key=False, unique=True, nullable=False),
+    Column(je_meta.HISTORY_ID, UUID(as_uuid=True), primary_key=True, unique=True, nullable=False),
     Column(
         je_meta.HISTORY_DATE,
         DateTime,

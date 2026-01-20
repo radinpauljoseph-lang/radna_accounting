@@ -33,8 +33,9 @@ supported_history_operations = [
     "U",
     "D"
 ]
+
 class JournalEntryModel(BaseModel):
-    id: str | UUID | None = None
+    id: UUID | str | None = None
     transaction_id: str = ""
     transaction_date: str | datetime | None = None
     currency_code: str | None = None
@@ -55,7 +56,8 @@ class JournalEntryModel(BaseModel):
             raise Exception(error)
         if isinstance(id, str):
             try:
-                test = uuid.UUID(id).version == 4
+                values[je_meta.ID] = uuid.UUID(id)
+                test = values[je_meta.ID].version == 4
             except (ValueError, TypeError):
                 error = copy.deepcopy(error_map.get(f"{JNE_CODE}0001"))
                 raise Exception(error)
@@ -63,8 +65,6 @@ class JournalEntryModel(BaseModel):
             if not isinstance(id, uuid.UUID):
                 error = copy.deepcopy(error_map.get(f"{JNE_CODE}0001"))
                 raise Exception(error)
-            else:
-                values[je_meta.ID] = str(id)
         return values
 
 
@@ -75,7 +75,7 @@ class JournalEntryModel(BaseModel):
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0009"))
             raise Exception(error)
         if not isinstance(transaction_id, str):
-            error = copy.deepcopy(error_map.get(f"{JNE_CODE}0005"))
+            error = copy.deepcopy(error_map.get(f"{JNE_CODE}0002"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 variable_type=type(transaction_id).__name__
             )
@@ -107,14 +107,14 @@ class JournalEntryModel(BaseModel):
     def transaction_date_validator(cls, values):
         transaction_date = values[je_meta.TRANSACTION_DATE]
         if isinstance(transaction_date, date):
-            values[je_meta.TRANSACTION_DATE] = transaction_date.strftime("%Y-%m-%d")
+            return values
         elif isinstance(transaction_date, str):
             if not re.search(r"^\d{4}-\d{2}-\d{2}\Z", transaction_date):
                 error = copy.deepcopy(error_map.get(f"{JNE_CODE}0010"))
                 raise Exception(error)
             else:
                 try:
-                    test = datetime.strptime(transaction_date, "%Y-%m-%d")
+                    values[je_meta.TRANSACTION_DATE] = datetime.strptime(transaction_date, "%Y-%m-%d").date()
                 except Exception as e:
                     error = copy.deepcopy(error_map.get(f"{JNE_CODE}0023"))
                     error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
@@ -225,28 +225,29 @@ class JournalEntryModel(BaseModel):
 
     @model_validator(mode="before")
     def posting_date_validator(cls, values):
-        posting_date = values[je_meta.POSTING_DATE]
-        if isinstance(posting_date, date):
-            values[je_meta.POSTING_DATE] = posting_date.strftime("%Y-%m-%d")
-        elif isinstance(posting_date, str):
-            if not re.search(r"^\d{4}-\d{2}-\d{2}\Z", posting_date):
-                error = copy.deepcopy(error_map.get(f"{JNE_CODE}0020"))
-                raise Exception(error)
-            else:
-                try:
-                    test = datetime.strptime(posting_date, "%Y-%m-%d")
-                except Exception as e:
-                    error = copy.deepcopy(error_map.get(f"{JNE_CODE}0022"))
-                    error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                        posting_date=posting_date
-                    )
+        if je_meta.POSTING_DATE in values.keys():
+            posting_date = values[je_meta.POSTING_DATE]
+            if posting_date is None or isinstance(posting_date, date):
+                return values
+            elif isinstance(posting_date, str):
+                if not re.search(r"^\d{4}-\d{2}-\d{2}\Z", posting_date):
+                    error = copy.deepcopy(error_map.get(f"{JNE_CODE}0020"))
                     raise Exception(error)
-        else:
-            error = copy.deepcopy(error_map.get(f"{JNE_CODE}0021"))
-            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                variable_type=type(posting_date).__name__
-            )
-            raise Exception(error)
+                else:
+                    try:
+                        values[je_meta.POSTING_DATE] = datetime.strptime(posting_date, "%Y-%m-%d").date()
+                    except Exception as e:
+                        error = copy.deepcopy(error_map.get(f"{JNE_CODE}0022"))
+                        error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                            posting_date=posting_date
+                        )
+                        raise Exception(error)
+            else:
+                error = copy.deepcopy(error_map.get(f"{JNE_CODE}0021"))
+                error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                    variable_type=type(posting_date).__name__
+                )
+                raise Exception(error)
         return values
     
     @model_validator(mode="before")
@@ -285,7 +286,7 @@ class JournalEntryModel(BaseModel):
         return values
 
 class JournalEntryHistoryModel(JournalEntryModel):
-    history_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    history_id: UUID = Field(default_factory=lambda: uuid.uuid4())
     history_date: str | datetime | None = Field(default_factory=lambda: datetime.now())
     history_operation: str | None = None
     

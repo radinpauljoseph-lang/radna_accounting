@@ -6,6 +6,7 @@ from ...models.chart_of_accounts import *
 from ...validators.journal_entry import (
     JournalEntryModel
 )
+from ...core.journal_entry.journal_entry import JournalEntryCore
 from ...core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
 from ...models.chart_of_accounts import coa_meta
 from ..utils.db.connector import (
@@ -19,26 +20,29 @@ creds = {
 
 class TestJEInsertRecord:
     def test_happy_path(self):
+        core_model = JournalEntryCore()
         current_datetime = datetime.now()
         record = {
             "id": uuid.uuid4(),
             "transaction_id": "202412-00001",
-            "transaction_date": "2024-02-29",
+            "transaction_date": date.today(),
             "currency_code": "PHP",
             "status": "NEW",
             "account_number": "000000000000000000000000000000",
             "entry_type": "DEBIT",
             "description": "",
             "amount": 1,
-            "posting_date": date.today(),
+            "posting_date": None,
             "created_date": current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}",
             "updated_date": current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
         }
-        print("&&&&&&&&&&&&&&&")
-        print(record)
-        print("&&&&&&&&&&&&&&&")
-        payload = JournalEntryModel(**record).model_dump()
-        payload = payload
-        print(payload)
+        core_model.insertRecord(record)
+        result = core_model.selectRecordById(record['id'])
+        record['transaction_id'] = "202412-00002"
+        core_model.updateRecordById(record['id'], record)
+        core_model.deleteRecordById(record['id'])
+        print("^^^^^^^^^^^^^^^^^^^^")
+        print(result)
+        print("^^^^^^^^^^^^^^^^^^^^")
         assert True is False
     
