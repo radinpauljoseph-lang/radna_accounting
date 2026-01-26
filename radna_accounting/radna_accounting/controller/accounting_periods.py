@@ -10,16 +10,16 @@ from ..configs.config import (
 from ..validators.accounting_periods import (
     AccountingPeriodsModel
 )
-from ..validators.transaction_id_tracker import (
-    TransactionIdTrackerModel
+from ..validators.transaction_ids import (
+    TransactionIdsModel
 )
 from ..core.accounting_periods.record_operations import (
     accounting_period_select_all_account_records,
     accounting_period_insert_record,
     accounting_period_update_record
 )
-from ..core.transaction_id_tracker.record_operations import (
-    transaction_id_tracker_insert_record
+from ..core.transaction_ids.record_operations import (
+    transaction_ids_insert_record
 )
 from ..core.journal_entry.record_operations import (
     je_select_by_transaction_date_month_year_record
@@ -27,7 +27,7 @@ from ..core.journal_entry.record_operations import (
 class AccountingPeriodsController:
     def __init__(self):
         self.validator_model = AccountingPeriodsModel
-        self.transaction_id_tracker_model = TransactionIdTrackerModel
+        self.transaction_ids_model = TransactionIdsModel
         self.engine = engine
         
     def create_accounting_period(self, obj) -> dict:
@@ -47,14 +47,14 @@ class AccountingPeriodsController:
             if not is_accounting_period_exists:
                 record = copy.deepcopy(accounting_period_obj)
                 record['status'] = "OPEN"
-                transaction_id_tracker_record = self.transaction_id_tracker_model(
+                transaction_ids_record = self.transaction_ids_model(
                     month=record['month'],
                     year=record['year'],
                     id=transaction_id
                 ).model_dump()
 
                 accounting_period_insert_record(self.engine, record)
-                transaction_id_tracker_insert_record(self.engine, transaction_id_tracker_record)
+                transaction_ids_insert_record(self.engine, transaction_ids_record)
                 return_data = {
                     "data": record
                 }

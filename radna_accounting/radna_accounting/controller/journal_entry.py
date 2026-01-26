@@ -14,6 +14,7 @@ from ..configs.response_codes.mapping import (
 )
 from ..core.journal_entry.journal_entry import JournalEntryCore
 from ..core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
+from ..core.transaction_ids.transaction_ids import TransactionIdsCore
 from ..validators.journal_entry import JournalEntryModel
 from ..validators.data_model import DATA_KEY
 from ..models.journal_entry import (
@@ -35,6 +36,7 @@ class JournalEntryController:
         self.engine = engine
         self.core_model = JournalEntryCore
         self.coa_core_model = ChartOfAccountsCore
+        self.ti_core_model = TransactionIdsCore
         self.rrn = rrn
 
     @catchAndLog(Exception)
@@ -114,7 +116,7 @@ class JournalEntryController:
     #             accounting_periods = accounting_periods[accounting_periods['status'] == 'OPEN']
     #         is_accounting_period_open = True if accounting_periods.shape[0] == 1 else False
 
-    #         transaction_ids_df = transaction_id_tracker_select_by_month_year_record(engine, transaction_date_month, transaction_date_year)
+    #         transaction_ids_df = transaction_ids_select_by_month_year_record(engine, transaction_date_month, transaction_date_year)
     #         if transaction_ids_df.shape[0] > 0:
     #             transaction_ids_df = transaction_ids_df[transaction_ids_df['year'] == transaction_date_year]
     #             if transaction_ids_df.shape[0] > 0:
@@ -148,16 +150,16 @@ class JournalEntryController:
     #                     raise Exception(f"create_journal_entry - Transaction ID already posted")
                 
     #             je_insert_record(self.engine, record)
-    #             new_transaction_id_validator = transaction_id_tracker_select_by_month_year_record(engine, transaction_date_month, transaction_date_year)
+    #             new_transaction_id_validator = transaction_ids_select_by_month_year_record(engine, transaction_date_month, transaction_date_year)
     #             if int(transaction_id_entry_number) == new_transaction_id_validator.shape[0]:
     #                 new_entry_number = int(transaction_id_entry_number) + 1
     #                 new_entry_number = f"{new_entry_number:05}"
-    #                 transaction_id_tracker_record = self.transaction_id_tracker_model(
+    #                 transaction_ids_record = self.transaction_ids_model(
     #                     month=transaction_date_month,
     #                     year=transaction_date_year,
     #                     id=new_entry_number
     #                 ).model_dump()
-    #                 transaction_id_tracker_insert_record(self.engine, transaction_id_tracker_record)
+    #                 transaction_ids_insert_record(self.engine, transaction_ids_record)
                     
     #             record = je_select_record(self.engine, record['id'])
     #             loggerOutput(message=record)

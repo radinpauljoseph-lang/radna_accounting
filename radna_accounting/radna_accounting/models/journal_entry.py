@@ -26,7 +26,7 @@ class JournalEntryTableMetaData:
         self.CREATED_DATE = "created_date"
         self.UPDATED_DATE = "updated_date"
 
-        self.TRANSACTION_ID_LENGTH = 30
+        self.TRANSACTION_ID_LENGTH = 50
         self.CURRENCY_CODE_LENGTH = 3
         self.STATUS_LENGTH = 15
         self.DESCRIPTION_LENGTH = 300

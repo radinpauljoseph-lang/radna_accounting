@@ -1,5 +1,6 @@
 pandas
-psycopg2
+psycopg2-binary
+redo
 requests
 django
 pydantic

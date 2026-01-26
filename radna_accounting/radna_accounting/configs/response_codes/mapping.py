@@ -1,6 +1,7 @@
 from .error_model import ErrorModel
 COA_CODE = "COA"
 JNE_CODE = "JNE"
+TIS_CODE = "TIS"
 HIS_CODE = "HIS"
 WEB_CODE = "WEB"
 SYS_CODE = "SYS"
@@ -318,6 +319,62 @@ error_map = {
         status=400,
         code=f"{JNE_CODE}0102",
         message="Journal Entry ID already exists",
+        details=None
+    ).model_dump(),
+
+    # Transaction IDs
+    f"{TIS_CODE}0001": ErrorModel(
+        status=400,
+        code=f"{TIS_CODE}0001",
+        message="Incorrect month data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{TIS_CODE}0002": ErrorModel(
+        status=400,
+        code=f"{TIS_CODE}0002",
+        message="Value is not a valid month",
+        details=None
+    ).model_dump(),
+    f"{TIS_CODE}0003": ErrorModel(
+        status=400,
+        code=f"{TIS_CODE}0003",
+        message="Incorrect year data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{TIS_CODE}0004": ErrorModel(
+        status=400,
+        code=f"{TIS_CODE}0004",
+        message="Value is not a valid year",
+        details=None
+    ).model_dump(),
+    f"{TIS_CODE}0005": ErrorModel(
+        status=400,
+        code=f"{TIS_CODE}0005",
+        message="Future accounting period is not allowed",
+        details=None
+    ).model_dump(),
+    f"{TIS_CODE}0006": ErrorModel(
+        status=400,
+        code=f"{TIS_CODE}0006",
+        message="Incorrect transaction ID data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{TIS_CODE}0007": ErrorModel(
+        status=400,
+        code=f"{TIS_CODE}0007",
+        message="ID maximum length is {id_length}",
+        details=None
+    ).model_dump(),
+    f"{TIS_CODE}0008": ErrorModel(
+        status=400,
+        code=f"{TIS_CODE}0008",
+        message="ID not in proper format",
+        details=None
+    ).model_dump(),
+    f"{TIS_CODE}0009": ErrorModel(
+        status=400,
+        code=f"{TIS_CODE}0009",
+        message="Transaction ID not in proper format",
         details=None
     ).model_dump(),
 
