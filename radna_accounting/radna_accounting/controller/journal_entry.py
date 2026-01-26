@@ -23,7 +23,7 @@ from ..models.journal_entry import (
 
 class JournalEntryControllerMetaData:
     def __init__(self):
-        self.JOURNAL_ENTRY_CONTROLLER = "JournalEntryControllerMetaData"
+        self.JOURNAL_ENTRY_CONTROLLER = "JournalEntryController"
         self.CREATE_JOURNAL_ENTRY = "createJournalEntry"
         self.UPDATE_JOURNAL_ENTRY = "updateJournalEntry"
         self.GET_JOURNAL_ENTRY = "getJournalEntry"

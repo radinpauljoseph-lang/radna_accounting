@@ -5,7 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from ..configs.config import (
     logger_types,
-    loggerOutput
+    loggerOutput,
+    NO_ID
 )
 from ..configs.response_codes.error_model import ErrorModel
 from ..configs.response_codes.mapping import (
@@ -77,10 +78,12 @@ def createAccountRequest(request):
             raise Exception(error)
         
     except Exception as e:
-        loggerOutput(method=logger_types.ERROR, message=f"{coa_request_meta.CREATE_ACCOUNT_REQUEST} - Caught something: {type(e).__name__} -> {e}")
+        rrn = NO_ID if rrn is None else rrn
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{coa_request_meta.CREATE_ACCOUNT_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
         del controller
-        loggerOutput(message=f"{coa_request_meta.CREATE_ACCOUNT_REQUEST} - DONE: {result}")
+        rrn = NO_ID if rrn is None else rrn
+        loggerOutput(rrn=rrn, message=f"{coa_request_meta.CREATE_ACCOUNT_REQUEST} - DONE: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
         return JsonResponse(result, status=CREATED_RESPONSE_CODE)
@@ -134,7 +137,7 @@ def getUpdateAccountRequest(request, id: str = None):
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{coa_request_meta.GET_UPDATE_ACCOUNT_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
         del controller
-        loggerOutput(message=f"get_update_account_request - DONE: {result}")
+        loggerOutput(rrn=rrn, message=f"get_update_account_request - DONE: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
         return JsonResponse(result, status=OK_RESPONSE_CODE)

@@ -1,6 +1,7 @@
 import copy
 from functools import wraps
 from typing import Type, Tuple
+import traceback
 
 from ...configs.response_codes.mapping import (
     SYS_CODE,
@@ -39,9 +40,11 @@ def catchAndLog(*exceptions: Type[BaseException]):
                 else:
                     error_msg = err.args[0]
                 loggerOutput(
+                    rrn="ERROR",
                     method=logger_types.ERROR, 
-                    message=f"[ERROR] - {func.__name__} - {error_msg}"
+                    message=f"{func.__name__} - {error_msg}"
                 )
+                traceback.print_exc()
                 return error_msg
 
         return wrapper

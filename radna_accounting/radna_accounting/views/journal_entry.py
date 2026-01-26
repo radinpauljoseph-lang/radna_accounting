@@ -5,7 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from ..configs.config import (
     logger_types,
-    loggerOutput
+    loggerOutput,
+    NO_ID
 )
 from ..configs.response_codes.error_model import ErrorModel
 from ..configs.response_codes.mapping import (
@@ -70,7 +71,7 @@ def createJournalEntryRequest(request):
                 if set(result) == set(error_model):
                     raise Exception(result)
         else:
-            loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.CREATE_JOURNAL_ENTRY_REQUEST} - Unsupported Request Method")
+            rrn = NO_ID if rrn is None else rrn
             error = copy.deepcopy(error_map.get(f"{WEB_CODE}0002"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 method=method
@@ -79,6 +80,7 @@ def createJournalEntryRequest(request):
             raise Exception(error)
         
     except Exception as err:
+        rrn = NO_ID if rrn is None else rrn
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.CREATE_JOURNAL_ENTRY_REQUEST} - Caught something: {type(err).__name__} -> {err}")
         error_msg = None
         if len(err.args) == 0 or (len(err.args) > 0 and isinstance(err.args[0], str)):
@@ -91,6 +93,7 @@ def createJournalEntryRequest(request):
         result = error_msg
     finally:
         del controller
+        rrn = NO_ID if rrn is None else rrn
         loggerOutput(rrn=rrn, message=f"{je_request_meta.CREATE_JOURNAL_ENTRY_REQUEST} - DONE: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
