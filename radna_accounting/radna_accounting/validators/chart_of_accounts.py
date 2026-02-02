@@ -151,7 +151,7 @@ class ChartOfAccountsModel(BaseModel):
     @model_validator(mode="before")
     def updated_date_converter(cls, values):
         if coa_meta.UPDATED_DATE in values.keys():
-            updated_date = values['updated_date']
+            updated_date = values[coa_meta.UPDATED_DATE]
             if updated_date is not None:
                 if isinstance(updated_date, str):
                     values[coa_meta.UPDATED_DATE] = datetime.strptime(updated_date, "%Y-%m-%d %H:%M:%S.%f")

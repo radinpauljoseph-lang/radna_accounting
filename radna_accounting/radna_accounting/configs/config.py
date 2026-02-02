@@ -12,6 +12,8 @@ from sqlalchemy import (
 
 logger = logging.getLogger(__name__)
 
+NO_ID = "NO_ID"
+
 class LoggerType():
     def __init__(self):
         self.INFO = "INFO"
@@ -27,7 +29,8 @@ def loggerOutput(rrn: str = None, method: str = logger_types.INFO, message: str 
     }
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")
 
-    logger_type_map[method](f"[{now}][{rrn}] - {message}")
+    logger_msg = f"[{now}][{rrn}] - {message}" if rrn != NO_ID else f"[{now}] - {message}"
+    logger_type_map[method](logger_msg)
 
 BASE_DIR = Path(__file__).resolve().parent
 config_path = f"{str(BASE_DIR)}\\config.ini"
@@ -39,6 +42,6 @@ CONFIGS = configparser.ConfigParser()
 CONFIGS.read(config_path)
 DB_CONNECTION = CONFIGS[f"{ENV}.database"]['connection_string']
 
-engine = create_engine(DB_CONNECTION, echo=True)
+engine = create_engine(DB_CONNECTION, echo=False)
 
 meta = MetaData()
