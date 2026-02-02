@@ -47,8 +47,8 @@ class TransactionIdsModel(BaseModel):
     
     @model_validator(mode="before")
     def month_year_validator(cls, values):
-        year = values[ti_meta.YEAR]
-        month = values[ti_meta.MONTH]
+        year = int(values[ti_meta.YEAR]) if isinstance(values[ti_meta.YEAR], str) else values[ti_meta.YEAR]
+        month = int(values[ti_meta.MONTH]) if isinstance(values[ti_meta.MONTH], str) else values[ti_meta.MONTH]
         current_date = datetime.now()
         if year > current_date.year:
           error = copy.deepcopy(error_map.get(f"{TIS_CODE}0005"))

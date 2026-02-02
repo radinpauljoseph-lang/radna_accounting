@@ -12,7 +12,8 @@ from ..models.journal_entry import (
     journal_entry_history
 )
 from ..models.accounting_periods import (
-    accounting_periods
+    accounting_periods,
+    accounting_periods_history
 )
 from ..models.transaction_ids import transaction_ids
 
@@ -21,6 +22,7 @@ table_definitions = [
     journal_entry.name,
     journal_entry_history.name,
     accounting_periods.name,
+    accounting_periods_history.name,
     transaction_ids.name
 ]
 def initialize():

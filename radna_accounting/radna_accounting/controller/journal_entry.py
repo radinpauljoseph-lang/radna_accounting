@@ -1,5 +1,5 @@
 import copy
-
+from datetime import datetime
 from ..utils.decorators.error_handling import catchAndLog
 from ..configs.config import (
     logger_types,
@@ -8,6 +8,8 @@ from ..configs.config import (
 )
 from ..configs.response_codes.mapping import (
     COA_CODE,
+    TIS_CODE,
+    ACP_CODE,
     JNE_CODE,
     MESSAGE_KEY,
     error_map
@@ -15,8 +17,14 @@ from ..configs.response_codes.mapping import (
 from ..core.journal_entry.journal_entry import JournalEntryCore
 from ..core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
 from ..core.transaction_ids.transaction_ids import TransactionIdsCore
+from ..core.accounting_periods.accounting_periods import AccountingPeriodsCore
 from ..validators.journal_entry import JournalEntryModel
 from ..validators.data_model import DATA_KEY
+from ..models.transaction_ids import ti_meta
+from ..models.accounting_periods import (
+    acp_meta,
+    acp_status
+)
 from ..models.journal_entry import (
     je_meta,
     je_status
@@ -37,6 +45,7 @@ class JournalEntryController:
         self.core_model = JournalEntryCore
         self.coa_core_model = ChartOfAccountsCore
         self.ti_core_model = TransactionIdsCore
+        self.acp_core_model = AccountingPeriodsCore
         self.rrn = rrn
 
     @catchAndLog(Exception)
@@ -52,6 +61,8 @@ class JournalEntryController:
 
         core_model = self.core_model(self.rrn)
         coa_core_model = self.coa_core_model(self.rrn)
+        ti_core_model = self.ti_core_model(self.rrn)
+        acp_core_model = self.acp_core_model(self.rrn)
         
         account_number_exists = coa_core_model.selectRecordById(
             je_obj[je_meta.ACCOUNT_NUMBER]
@@ -64,6 +75,10 @@ class JournalEntryController:
             )
             del core_model
             del coa_core_model
+            del core_model
+            del coa_core_model
+            del ti_core_model
+            del acp_core_model
             raise Exception(error)
             
         journal_entry_exists = core_model.selectRecordById(
@@ -73,19 +88,75 @@ class JournalEntryController:
             record = copy.deepcopy(je_obj)
 
             # Add checking for Transaction ID here
+            transaction_id_parts = ti_core_model.parseTransactionId(record[je_meta.TRANSACTION_ID])
+            transaction_id_exists = ti_core_model.selectRecord(
+                month=transaction_id_parts[ti_meta.MONTH],
+                year=transaction_id_parts[ti_meta.YEAR],
+                id=transaction_id_parts[ti_meta.ID]
+            )
+            if not transaction_id_exists:
+                error = copy.deepcopy(error_map.get(f"{JNE_CODE}{TIS_CODE}0103"))
+                del core_model
+                del coa_core_model
+                del ti_core_model
+                del acp_core_model
+                raise Exception(error)
             # Add checking for Transaction Date here
+            transaction_date = record[je_meta.TRANSACTION_DATE]
+            
+            if transaction_id_parts[ti_meta.MONTH] != transaction_date.month or transaction_id_parts[ti_meta.YEAR] != transaction_date.year:
+                error = copy.deepcopy(error_map.get(f"{JNE_CODE}0103"))
+                del core_model
+                del coa_core_model
+                del ti_core_model
+                del acp_core_model
+                raise Exception(error)
+            
+            accounting_period_data = acp_core_model.selectRecord(
+                month=transaction_date.month,
+                year=transaction_date.year
+            )
+            if not accounting_period_data:
+                error = copy.deepcopy(error_map.get(f"{JNE_CODE}{ACP_CODE}0101"))
+                error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                    transaction_date=f"{transaction_date.year}-{transaction_date.month}-{transaction_date.day}"
+                )
+                del core_model
+                del coa_core_model
+                del ti_core_model
+                del acp_core_model
+                raise Exception(error)
+            
+            accounting_period_data = accounting_period_data[DATA_KEY]
+            if accounting_period_data[acp_meta.STATUS] == acp_status.CLOSED:
+                error = copy.deepcopy(error_map.get(f"{JNE_CODE}{ACP_CODE}0102"))
+                raise Exception(error)
 
             core_model.insertRecord(record)
+
             record = core_model.selectRecordById(record[je_meta.ID])
+
+            current_transaction_id = ti_core_model.selectCurrentId(
+                month=transaction_id_parts[ti_meta.MONTH],
+                year=transaction_id_parts[ti_meta.YEAR]
+            )[DATA_KEY]
+
+            if transaction_id_parts[ti_meta.ID] == current_transaction_id[ti_meta.ID]:
+                transaction_id_parts[ti_meta.ID] = str(int(transaction_id_parts[ti_meta.ID]) + 1).zfill(5)
+                ti_core_model.insertRecord(transaction_id_parts)
             return_data = record
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0102"))
             del core_model
             del coa_core_model
+            del ti_core_model
+            del acp_core_model
             raise Exception(error)
         loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.CREATE_JOURNAL_ENTRY} - Done Creating Journal Entry")
         del core_model
         del coa_core_model
+        del ti_core_model
+        del acp_core_model
         return return_data
         
     # def create_journal_entry(self, obj) -> dict:

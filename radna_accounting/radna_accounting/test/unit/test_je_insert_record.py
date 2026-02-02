@@ -37,12 +37,12 @@ class TestJEInsertRecord:
             "updated_date": current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
         }
         core_model.insertRecord(record)
-        result = core_model.selectRecordById(record['id'])
-        record['transaction_id'] = "202412-00002"
-        core_model.updateRecordById(record['id'], record)
-        core_model.deleteRecordById(record['id'])
-        print("^^^^^^^^^^^^^^^^^^^^")
-        print(result)
-        print("^^^^^^^^^^^^^^^^^^^^")
+        # result = core_model.selectRecordById(record['id'])
+        # record['transaction_id'] = "202412-00002"
+        # core_model.updateRecordById(record['id'], record)
+        # core_model.deleteRecordById(record['id'])
+        # print("^^^^^^^^^^^^^^^^^^^^")
+        # print(result)
+        # print("^^^^^^^^^^^^^^^^^^^^")
         assert True is False
     

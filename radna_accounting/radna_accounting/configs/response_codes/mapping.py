@@ -2,6 +2,7 @@ from .error_model import ErrorModel
 COA_CODE = "COA"
 JNE_CODE = "JNE"
 TIS_CODE = "TIS"
+ACP_CODE = "ACP"
 HIS_CODE = "HIS"
 WEB_CODE = "WEB"
 SYS_CODE = "SYS"
@@ -321,6 +322,12 @@ error_map = {
         message="Journal Entry ID already exists",
         details=None
     ).model_dump(),
+    f"{JNE_CODE}0103": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0103",
+        message="Transaction ID used not valid for given Transaction Date",
+        details=None
+    ).model_dump(),
 
     # Transaction IDs
     f"{TIS_CODE}0001": ErrorModel(
@@ -377,11 +384,93 @@ error_map = {
         message="Transaction ID not in proper format",
         details=None
     ).model_dump(),
+    f"{JNE_CODE}{TIS_CODE}0101": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}{TIS_CODE}0101",
+        message="Invalid Transaction ID",
+        details=None
+    ).model_dump(),
 
+
+    # Accounting Periods
+    f"{ACP_CODE}0001": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0001",
+        message="Incorrect month data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{ACP_CODE}0002": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0002",
+        message="Value is not a valid month",
+        details=None
+    ).model_dump(),
+    f"{ACP_CODE}0003": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0003",
+        message="Incorrect year data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{ACP_CODE}0004": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0004",
+        message="Value is not a valid year",
+        details=None
+    ).model_dump(),
+    f"{ACP_CODE}0005": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0005",
+        message="Future accounting period is not allowed",
+        details=None
+    ).model_dump(),
+    f"{ACP_CODE}0006": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0006",
+        message="Unknown status \'{status}\'",
+        details=None
+    ).model_dump(),
+    f"{ACP_CODE}0007": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0007",
+        message="Incorrect status data type \'{variable_type}\'",
+        details=None
+    ).model_dump(),
+    f"{ACP_CODE}0101": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0101",
+        message="Accounting Period is already closed",
+        details=None
+    ).model_dump(),
+    f"{ACP_CODE}0102": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0102",
+        message="Accounting Period already exists",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}{ACP_CODE}0101": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0101",
+        message="Accounting Period for {transaction_date} does not exist",
+        details=None
+    ).model_dump(),
+     f"{JNE_CODE}{ACP_CODE}0102": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0102",
+        message="Accounting Period is already closed",
+        details=None
+    ).model_dump(),
+
+    
     # History Tables
     f"{JNE_CODE}{HIS_CODE}0001": ErrorModel(
         status=400,
         code=f"{JNE_CODE}{HIS_CODE}0001",
+        message="Unknown History Operation \'{history_operation}\'",
+        details=None
+    ).model_dump(),
+    f"{ACP_CODE}{HIS_CODE}0001": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}{HIS_CODE}0001",
         message="Unknown History Operation \'{history_operation}\'",
         details=None
     ).model_dump(),

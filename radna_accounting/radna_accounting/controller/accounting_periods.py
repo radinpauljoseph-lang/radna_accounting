@@ -1,137 +1,79 @@
 import copy
-import uuid
-from datetime import datetime
 
+from ..utils.decorators.error_handling import catchAndLog
 from ..configs.config import (
     logger_types,
     loggerOutput,
     engine
 )
-from ..validators.accounting_periods import (
-    AccountingPeriodsModel
+from ..configs.response_codes.mapping import (
+    ACP_CODE,
+    MESSAGE_KEY,
+    error_map
 )
-from ..validators.transaction_ids import (
-    TransactionIdsModel
+from ..core.accounting_periods.accounting_periods import AccountingPeriodsCore
+from ..core.transaction_ids.transaction_ids import TransactionIdsCore
+from ..validators.accounting_periods import AccountingPeriodsModel
+from ..validators.transaction_ids import TransactionIdsModel
+from ..validators.data_model import DATA_KEY
+from ..models.accounting_periods import (
+    acp_meta,
+    acp_status
 )
-from ..core.accounting_periods.record_operations import (
-    accounting_period_select_all_account_records,
-    accounting_period_insert_record,
-    accounting_period_update_record
-)
-from ..core.transaction_ids.record_operations import (
-    transaction_ids_insert_record
-)
-from ..core.journal_entry.record_operations import (
-    je_select_by_transaction_date_month_year_record
-)
-class AccountingPeriodsController:
+
+FIRST_ID = "00001"
+class AccountingPeriodsControllerMetaData:
     def __init__(self):
+        self.ACCOUNTING_PERIODS_CONTROLLER = "AccountingPeriodsController"
+        self.CREATE_ACCOUNTING_PERIOD = "createAccountingPeriod"
+    
+acp_controller_meta = AccountingPeriodsControllerMetaData()
+
+class AccountingPeriodsController:
+    def __init__(self, rrn = None):
         self.validator_model = AccountingPeriodsModel
-        self.transaction_ids_model = TransactionIdsModel
         self.engine = engine
-        
-    def create_accounting_period(self, obj) -> dict:
-        return_data = {}
-        is_accounting_period_exists = False
-        transaction_id = "00001"
-        try:
-            accounting_period_obj = self.validator_model(**obj)
-            accounting_period_obj = accounting_period_obj.model_dump()
-            accounting_periods_df =  accounting_period_select_all_account_records(self.engine)
-            if accounting_periods_df.shape[0] >= 1:
-                accounting_periods_df = accounting_periods_df[accounting_periods_df['year'] == accounting_period_obj['year']]
-                if accounting_periods_df.shape[0] >= 1:
-                    accounting_periods_df = accounting_periods_df[accounting_periods_df['month'] == accounting_period_obj['month']]
-                is_accounting_period_exists = False if accounting_periods_df.shape[0] == 0 else True
+        self.core_model = AccountingPeriodsCore
+        self.ti_core_model = TransactionIdsCore
+        self.rrn = rrn
 
-            if not is_accounting_period_exists:
-                record = copy.deepcopy(accounting_period_obj)
-                record['status'] = "OPEN"
-                transaction_ids_record = self.transaction_ids_model(
-                    month=record['month'],
-                    year=record['year'],
-                    id=transaction_id
+    @catchAndLog(Exception)
+    def createAccountingPeriod(self, obj) -> dict:
+        loggerOutput(rrn=self.rrn, message=f"{acp_controller_meta.ACCOUNTING_PERIODS_CONTROLLER}.{acp_controller_meta.CREATE_ACCOUNTING_PERIOD} - Start Creating Accounting Period")
+        return_data = {}
+        acp_obj = copy.deepcopy(obj)
+        acp_obj[acp_meta.STATUS] = acp_status.OPEN
+
+        acp_obj = self.validator_model(**acp_obj)
+        acp_obj = acp_obj.model_dump()
+
+        core_model = self.core_model(self.rrn)
+        ti_core_model = self.ti_core_model(self.rrn)
+            
+        accounting_period_exists = core_model.selectRecord(
+            month=acp_obj[acp_meta.MONTH],
+            year=acp_obj[acp_meta.YEAR]
+        )
+        if not accounting_period_exists:
+            record = copy.deepcopy(acp_obj)
+
+            core_model.insertRecord(record)
+            record = core_model.selectRecord(
+                month=acp_obj[acp_meta.MONTH],
+                year=acp_obj[acp_meta.YEAR]
+            )
+            ti_core_model.insertRecord(
+                TransactionIdsModel(
+                    month=acp_obj[acp_meta.MONTH],
+                    year=acp_obj[acp_meta.YEAR],
+                    id=FIRST_ID
                 ).model_dump()
-
-                accounting_period_insert_record(self.engine, record)
-                transaction_ids_insert_record(self.engine, transaction_ids_record)
-                return_data = {
-                    "data": record
-                }
-                loggerOutput(message=f"create_accounting_period - {return_data}")
-            else:
-                return_data = {
-                    "error": "create_accounting_period - Accounting Period already exists"
-                }
-        except TypeError as e:
-            loggerOutput(method=logger_types.ERROR, message=f"create_accounting_period - Caught something: {type(e).__name__} -> {e}")
-            return_data = {
-                "error": str(e)
-            }
-        except BaseException as e:
-            loggerOutput(method=logger_types.ERROR, message=f"create_accounting_period - Caught something: {type(e).__name__} -> {e}")
-            return_data = {
-                "error": str(e)
-            }
-        finally:
-            loggerOutput(message=f"DONE: create_accounting_period - {return_data}")
-            return return_data
-    
-    def close_accounting_period(self, obj) -> dict:
-        return_data = {}
-        is_accounting_period_exists = False
-        is_accounting_period_closed = True
-        try:
-            accounting_period_obj = self.validator_model(**obj)
-            accounting_period_obj = accounting_period_obj.model_dump()
-            accounting_periods_df =  accounting_period_select_all_account_records(self.engine)
-
-            if accounting_periods_df.shape[0] >= 1:
-                accounting_periods_df = accounting_periods_df[accounting_periods_df['year'] == accounting_period_obj['year']]
-                if accounting_periods_df.shape[0] >= 1:
-                    accounting_periods_df = accounting_periods_df[accounting_periods_df['month'] == accounting_period_obj['month']]
-                is_accounting_period_exists = False if accounting_periods_df.shape[0] == 0 else True
-
-            if is_accounting_period_exists:
-                accounting_periods_df = accounting_periods_df[accounting_periods_df['status'] == 'CLOSED']
-                is_accounting_period_closed = True if accounting_periods_df.shape[0] > 0 else False
-                    
-
-            if is_accounting_period_exists and not is_accounting_period_closed:
-                record = copy.deepcopy(accounting_period_obj)
-                record['status'] = "CLOSED"
-                je_records = je_select_by_transaction_date_month_year_record(self.engine, record['month'], record['year'])
-                if je_records.shape[0] > 0:
-                    je_records = je_records[je_records['status'] == "UNPOSTED"]
-                    if je_records.shape[0] > 0:
-                        raise Exception(f"close_accounting_period - Accounting Period {record['month']:02}-{record['year']} has unposted journal entries")
-                
-                accounting_period_update_record(self.engine, record)
-                return_data = {
-                    "data": record
-                }
-                loggerOutput(message=f"close_accounting_period - {return_data}")
-            else:
-                return_data = {
-                    "error": "close_accounting_period - Accounting Period Not Found or already closed"
-                }
-        except TypeError as e:
-            loggerOutput(method=logger_types.ERROR, message=f"close_accounting_period - Caught something: {type(e).__name__} -> {e}")
-            return_data = {
-                "error": str(e)
-            }
-        except ValueError as e:
-            loggerOutput(method=logger_types.ERROR, message=f"close_accounting_period - Caught something: {type(e).__name__} -> {e}")
-            return_data = {
-                "error": str(e)
-            }
-        except BaseException as e:
-            loggerOutput(method=logger_types.ERROR, message=f"close_accounting_period - Caught something: {type(e).__name__} -> {e}")
-            return_data = {
-                "error": str(e)
-            }
-        finally:
-            loggerOutput(message=f"DONE: close_accounting_period - {return_data}")
-            return return_data
-
-    
+            )
+            return_data = record
+        else:
+            error = copy.deepcopy(error_map.get(f"{ACP_CODE}0102"))
+            del core_model
+            raise Exception(error)
+        loggerOutput(rrn=self.rrn, message=f"{acp_controller_meta.ACCOUNTING_PERIODS_CONTROLLER}.{acp_controller_meta.CREATE_ACCOUNTING_PERIOD} - Done Creating Accounting Period")
+        del core_model
+        return return_data

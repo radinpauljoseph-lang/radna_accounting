@@ -1,5 +1,6 @@
 import copy
 import re
+from sqlalchemy import cast, Integer, desc
 from ...configs.config  import (
     logger_types,
     loggerOutput
@@ -26,7 +27,7 @@ class TransactionIdsCoreMetaData:
         self.INSERT_RECORD = "insertRecord"
         self.SELECT_IDS_BY_MONTH_YEAR = "selectIdsByMonthYear"
         self.SELECT_RECORD = "selectRecord"
-        self.PARSE_ID = "parseId"
+        self.PARSE_TRNASCTION_ID = "parseTransactionId"
 
 ti_core_meta = TransactionIdsCoreMetaData()
 
@@ -102,7 +103,7 @@ class TransactionIdsCore:
             month=month,
             year=year,
             id=id
-        )
+        ).model_dump()
         with self.engine.connect() as conn:
             validator = transaction_ids\
                 .select()\
@@ -121,31 +122,54 @@ class TransactionIdsCore:
             loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORD} - {result}")
         return result
     
-    def parseId(self, transaction_id: str) -> str:
+    def selectCurrentId(self, month: int, year: int) -> dict:
+        validator = None
+        result = None
+
+        loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORD} - Start Select Record")
+
+        with self.engine.connect() as conn:
+            validator = transaction_ids\
+                .select()\
+                .where(
+                    (transaction_ids.c.month == month) &
+                    (transaction_ids.c.year == year)
+                )\
+                .order_by(
+                    desc(cast(transaction_ids.c.id, Integer))
+                )\
+                .limit(1)
+            result = conn.execute(validator)
+
+        result = result.first()
+        if result is not None:
+            result = dict(result._mapping)
+            result = self.dto_model(**result).model_dump()
+            result = DataModel(data=result).model_dump()
+            loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORD} - {result}")
+        return result
+    
+    def parseTransactionId(self, transaction_id: str) -> dict:
+        result = {}
         try:
             if not isinstance(transaction_id, str):
                 raise Exception()
             if re.search(r"^\d{4}\d{2}\-\d{5}\Z", transaction_id):
-                id = transaction_id[7:12]
-                return id
+                result = self.dto_model(
+                    year=int(transaction_id[:4]),
+                    month=int(transaction_id[4:6]),
+                    id=str(transaction_id[7:12])
+                ).model_dump()
             else:
                 error = copy.deepcopy(error_map.get(f"{TIS_CODE}0009"))
                 raise Exception(error)
         except Exception as err:
             loggerOutput(
                 rrn=self.rrn,
-                message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.PARSE_ID} - {err}"
+                message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.PARSE_TRNASCTION_ID} - {err}"
             )
-            return ""
-        
-
-    def parseMonth(self, transaction_id: str) -> int:
-        year = transaction_id[:4]
-        year = int(year)
-        return 
-
-    def parseYear(self, transaction_id: str) -> int:
-        pass
+        finally:
+            return result
         
 
 
