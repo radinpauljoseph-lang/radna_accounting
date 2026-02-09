@@ -11,7 +11,9 @@ urlpatterns = [
     path("accounts", chart_of_accounts.createAccountRequest),
     path("accounts/<str:id>", chart_of_accounts.getUpdateAccountRequest),
     path("journalEntry", journal_entry.createJournalEntryRequest),
-    # path("journal-entry/<str:id>", journal_entry.get_update_journal_entry_request),
+    path("journalEntry/<str:id>", journal_entry.getUpdateJournalEntryRequest),
+    path("journalEntry/<str:id>/checkAmounts", journal_entry.getTransactionIdCreditDebitAmountRequest),
+    path("journalEntry/<str:id>/forReview", journal_entry.setTransactionIdForReviewRequest),
     # path("journal-entry/transaction-id/<str:transaction_id>", journal_entry.get_delete_journal_entry_by_transaction_id_request),
     # path("journal-entry/post/month/<int:month>/year/<int:year>", journal_entry.post_journal_entry_by_month_year_request),
     path("accountingPeriod", accounting_periods.createAccountingPeriodRequest)

@@ -6,4 +6,4 @@ class ErrorModel(BaseModel):
     status: int = 0
     code: str = ""
     message: str = ""
-    details: str | None = None
+    details: str | list | None = None

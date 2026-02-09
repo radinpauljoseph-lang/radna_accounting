@@ -1,6 +1,6 @@
 import copy
 from datetime import datetime
-import uuid
+from uuid import uuid4
 from ...configs.config  import (
     logger_types,
     loggerOutput
@@ -14,6 +14,7 @@ from ...models.journal_entry import (
     journal_entry,
     journal_entry_history,
     je_meta,
+    je_types
 )
 from ...validators.journal_entry import (
     JournalEntryModel,
@@ -29,7 +30,8 @@ class JournalEntryCoreMetaData:
         self.JOURNAL_ENTRY_CORE = "JournalEntryCore"
         self.INSERT_RECORD = "insertRecord"
         self.SELECT_RECORD_BY_ID = "selectRecordById"
-        self.SELECT_RECORD_BY_NAME = "selectRecordByName"
+        self.SELECT_RECORD_BY_TRANSACTION_ID = "selectRecordByTransactionId"
+        self.UPDATE_RECORD_STATUS_BY_TRANSACTION_ID = "updateRecordStatusByTransactionId"
         self.UPDATE_RECORD_BY_ID = "updateRecordById"
         self.DELETE_RECORD_BY_ID = "deleteRecordById"
 
@@ -85,6 +87,27 @@ class JournalEntryCore:
             loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.SELECT_RECORD_BY_ID} - {result}")
         
         loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.SELECT_RECORD_BY_ID} - Done Select Record By ID")
+        return result
+    
+    def selectRecordByTransactionId(self, transaction_id: str) -> dict:
+        validator = None
+        result = []
+
+        loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.SELECT_RECORD_BY_TRANSACTION_ID} - Start Select Record By Transaction ID")
+        with self.engine.connect() as conn:
+            validator = journal_entry\
+                .select()\
+                .where(journal_entry.c.transaction_id == transaction_id)
+            result = conn.execute(validator)
+        
+        result = result.all()
+        result = [row._asdict() for row in result]
+        if len(result) > 0:
+            result = [self.dto_model(**data).model_dump() for data in result]
+            result = DataModel(data=result).model_dump()
+            loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.SELECT_RECORD_BY_TRANSACTION_ID} - {result}")
+        
+        loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.SELECT_RECORD_BY_TRANSACTION_ID} - Done Select Record By Transaction ID")
         return result
     
     def updateRecordById(self, id: str, obj: dict) -> None:
@@ -147,6 +170,69 @@ class JournalEntryCore:
             loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.UPDATE_RECORD_BY_ID} - Journal Entry Record Not Found: {id}")
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0026"))
             raise Exception(error)
+        
+    
+    def updateRecordStatusByTransactionId(self, transaction_id: str, status: str) -> None:
+        loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.UPDATE_RECORD_STATUS_BY_TRANSACTION_ID} - Start Update Journal Entry Record Status {transaction_id}: {status}")
+        query_result = self.selectRecordByTransactionId(transaction_id)
+
+        if len(query_result[DATA_KEY]) > 0:
+            record = {
+                je_meta.STATUS: status,
+                je_meta.UPDATED_DATE: datetime.now()
+            }
+
+            with self.engine.connect() as conn:
+                update_statement = journal_entry\
+                    .update()\
+                    .where(journal_entry.c.transaction_id == transaction_id)\
+                    .values(**record)
+                conn.execute(update_statement)
+
+                query_result = self.selectRecordByTransactionId(transaction_id)
+                query_result = query_result[DATA_KEY]
+
+                for item in query_result:
+                    history_record = copy.deepcopy(item)
+                    history_record[je_meta.STATUS] = status
+                    history_record[je_meta.HISTORY_OPERATION] = "U"
+                    history_record[je_meta.HISTORY_DATE] = datetime.now()
+                    history_record = self.history_model(**history_record).model_dump()
+
+                    history_insert_statement = journal_entry_history\
+                        .insert()\
+                        .values(**history_record)
+                    conn.execute(history_insert_statement)
+
+                conn.commit()
+                loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.UPDATE_RECORD_STATUS_BY_TRANSACTION_ID} - Done Update Journal Entry Record Status {id}: {status}")
+        else:
+            error = copy.deepcopy(error_map.get(f"{JNE_CODE}0010"))
+            raise Exception(error)
+        
+    def getTransactionIdAmount(self, transaction_id: str) -> dict:
+        loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.DELETE_RECORD_BY_ID} - Start Get Transaction ID Amount: {transaction_id}")
+        query_result = self.selectRecordByTransactionId(transaction_id)
+
+        counter = {
+            je_types.CREDIT: 0,
+            je_types.DEBIT: 0
+        }
+
+        if len(query_result) > 0:
+            journal_entries = query_result[DATA_KEY]
+            for entry in journal_entries:
+                entry_type = entry[je_meta.ENTRY_TYPE]
+                amount = entry[je_meta.AMOUNT]
+                counter[entry_type] = counter[entry_type] + amount
+                    
+        else:
+            loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.UPDATE_RECORD_BY_ID} - Done Get Transaction ID Amount: {transaction_id}")
+            error = copy.deepcopy(error_map.get(f"{JNE_CODE}0010"))
+            raise Exception(error)
+        
+        return counter
+
 
 
 

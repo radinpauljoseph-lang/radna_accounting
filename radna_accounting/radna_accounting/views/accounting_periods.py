@@ -32,11 +32,11 @@ from .request_details.constants import (
 )
 from .request_details.request_validators import checkRequiredValidators
 
-class JournalEntryRequestMetaData:
+class AccountingPeriodsRequestMetaData:
     def __init__(self):
         self.CREATING_ACCOUNTING_PERIOD_REQUEST = "createAccountingPeriodRequest"
 
-je_request_meta = JournalEntryRequestMetaData()
+je_request_meta = AccountingPeriodsRequestMetaData()
 
 required_headers = [REQUEST_REFERENCE_NUMBER]
 

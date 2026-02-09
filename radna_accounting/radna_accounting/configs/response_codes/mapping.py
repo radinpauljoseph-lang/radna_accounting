@@ -137,7 +137,7 @@ error_map = {
     f"{COA_CODE}0107": ErrorModel(
         status=400,
         code=f"{COA_CODE}0107",
-        message="Account ID required",
+        message="Account ID is required",
         details=None
     ).model_dump(),
 
@@ -328,6 +328,30 @@ error_map = {
         message="Transaction ID used not valid for given Transaction Date",
         details=None
     ).model_dump(),
+    f"{JNE_CODE}0104": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0104",
+        message="Error during transition for review",
+        details=[]
+    ).model_dump(),
+     f"{JNE_CODE}0105": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0105",
+        message="Journal Entry {id}\'s status \'{status}\' not valid for review",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0106": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0106",
+        message="Transaction ID\'s Credit & Debit amounts are not equal",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0107": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0107",
+        message="Journal Entry {id} already for review",
+        details=None
+    ).model_dump(),
 
     # Transaction IDs
     f"{TIS_CODE}0001": ErrorModel(
@@ -382,6 +406,12 @@ error_map = {
         status=400,
         code=f"{TIS_CODE}0009",
         message="Transaction ID not in proper format",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0010": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0010",
+        message="Invalid Transaction ID",
         details=None
     ).model_dump(),
     f"{JNE_CODE}{TIS_CODE}0101": ErrorModel(
