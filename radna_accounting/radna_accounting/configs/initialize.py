@@ -16,6 +16,10 @@ from ..models.accounting_periods import (
     accounting_periods_history
 )
 from ..models.transaction_ids import transaction_ids
+from ..models.journal_voucher import (
+    journal_voucher,
+    journal_voucher_history
+)
 
 table_definitions = [
     chart_of_accounts.name,
@@ -23,7 +27,9 @@ table_definitions = [
     journal_entry_history.name,
     accounting_periods.name,
     accounting_periods_history.name,
-    transaction_ids.name
+    transaction_ids.name,
+    journal_voucher.name,
+    journal_voucher_history.name
 ]
 def initialize():
     inspector = inspect(engine)

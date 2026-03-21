@@ -38,6 +38,7 @@ class JournalEntryControllerMetaData:
         self.CREATE_JOURNAL_ENTRY = "createJournalEntry"
         self.UPDATE_JOURNAL_ENTRY = "updateJournalEntry"
         self.GET_JOURNAL_ENTRY = "getJournalEntry"
+        self.GET_JOURNAL_ENTRY_BY_TRANSACTION_ID = "getJournalEntryByTransactionId"
         self.SET_TRANSACTION_ID_FOR_REVIEW = "setTransactionIdForReview"
     
 je_controller_meta = JournalEntryControllerMetaData()
@@ -172,15 +173,28 @@ class JournalEntryController:
             return_data = record
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0026"))
-            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                account_id=id
-            )
             del core_model
             raise Exception(error)
         loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Done Get Journal Entry Record")  
         del core_model
         return return_data
 
+    @catchAndLog(Exception)
+    def getJournalEntryByTransactionId(self, transaction_id: str) -> dict:
+        return_data = {}
+        core_model = self.core_model(self.rrn)
+        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Start Get Journal Entry Record By Transaction ID")  
+        record = core_model.selectRecordByTransactionId(transaction_id)
+        if record is not None:
+            return_data = record
+        else:
+            error = copy.deepcopy(error_map.get(f"{JNE_CODE}0028"))
+            del core_model
+            raise Exception(error)
+        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Done Get Journal Entry Record By Transaction ID")  
+        del core_model
+        return return_data
+    
     @catchAndLog(Exception)
     def getTransactionIdCreditDebitAmount(self, transaction_id: str) -> dict:
         return_data = {}
@@ -203,6 +217,14 @@ class JournalEntryController:
             query_result = core_model.selectRecordByTransactionId(transaction_id)
             result = query_result[DATA_KEY]
             
+            # Add checking for transaction date (all JE records with same transaction IDs must have the same transaction dates)
+            first_value = result[0].get(je_meta.TRANSACTION_DATE)
+            transaction_dates_equal =  all(item.get(je_meta.TRANSACTION_DATE) == first_value for item in result)
+
+            if not transaction_dates_equal:
+                error = copy.deepcopy(error_map.get(f"{JNE_CODE}0108"))
+                error_details.append(error)
+                
             for data in result:
                 if data[je_meta.STATUS] == je_status.FOR_REVIEW:
                     error = copy.deepcopy(error_map.get(f"{JNE_CODE}0107"))

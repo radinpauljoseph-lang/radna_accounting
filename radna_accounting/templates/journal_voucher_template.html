@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Journal Voucher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        .voucher-header {
+            margin-bottom: 20px;
+        }
+        .voucher-header h2 {
+            margin: 0;
+        }
+        .voucher-header p {
+            margin: 4px 0;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+        td {
+            vertical-align: top;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .total-row td {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="voucher-header">
+    <h2>Journal Voucher</h2>
+    <p><strong>Company/Business Name:</strong> {{companyName}}</p>
+    <p><strong>Voucher No:</strong> {{journalVoucherId}}</p>
+    <p><strong>Date:</strong> {{transactionDate}}</p>
+    <p><strong>Currency:</strong> {{currencyCode}}</p>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Account Number</th>
+            <th>Account Name</th>
+            <th>Debit Amount</th>
+            <th>Credit Amount</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for x in journalEntry %}
+        <tr>
+            <td>{{ x.account_number }}</td>
+            <td>{{x.account_name}}</td>
+
+            {% if x.entry_type == "DEBIT" %}
+                <td class="text-right">{{ x.amount }}</td>
+            {% else %}
+                <td class="text-right">0</td>
+            {% endif %}
+
+            {% if x.entry_type == "CREDIT" %}
+                <td class="text-right">{{ x.amount }}</td>
+            {% else %}
+                <td class="text-right">0</td>
+            {% endif %}
+
+            <td>{{ x.description }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr class="total-row">
+            <td colspan="2"></td>
+            <td class="text-right">{{debitTotal}}</td>
+            <td class="text-right">{{creditTotal}}</td>
+            <td colspan="1"></td>
+        </tr>
+    </tfoot>
+</table>
+
+<br>
+
+<table style="width: 100%; margin-top: 30px;">
+    <tr>
+        <td><strong>Prepared By:</strong> ____________________</td>
+        <td><strong>Checked By:</strong> ____________________</td>
+        <td><strong>Approved By:</strong> ____________________</td>
+    </tr>
+</table>
+
+</body>
+</html>

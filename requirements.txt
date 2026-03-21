@@ -12,3 +12,5 @@ faker
 logging
 configparser
 assertpy
+pdfkit
+wkhtmltopdf

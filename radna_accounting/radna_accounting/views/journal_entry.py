@@ -1,6 +1,11 @@
 import copy
 import json
-from django.http import JsonResponse
+from django.http import (
+    JsonResponse,
+    HttpResponse
+)
+from xhtml2pdf import pisa
+from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 
 from ..configs.config import (
@@ -20,6 +25,7 @@ from ..configs.response_codes.mapping import (
 )
 
 from ..controller.journal_entry import JournalEntryController
+from ..controller.journal_voucher import JournalVoucherController
 from .request_details.constants import (
     UTF_8,
     REQUEST_REFERENCE_NUMBER,
@@ -31,12 +37,16 @@ from .request_details.constants import (
     CREATED_RESPONSE_CODE
 )
 from .request_details.request_validators import checkRequiredValidators
+from ..validators.data_model import DATA_KEY
+from ..validators.journal_voucher import JournalVoucherDocumentDataModel
 
 class JournalEntryRequestMetaData:
     def __init__(self):
         self.CREATE_JOURNAL_ENTRY_REQUEST = "createJournalEntryRequest"
         self.GET_UPDATE_JOURNAL_ENTRY_REQUEST = "getUpdateJournalEntryRequest"
+        self.GET_JOURNAL_ENTRY_BY_TRANSACTION_ID_REQUEST = "getJournalEntryByTransactionIdRequest"
         self.GET_TRANSACTION_ID_CREDIT_DEBIT_AMOUNT_REQUEST = "getTransactionIdCreditDebitAmountRequest"
+        self.SET_TRANSACTION_ID_FOR_REVIEW_REQUEST = "setTransactionIdForReviewRequest"
 
 je_request_meta = JournalEntryRequestMetaData()
 
@@ -156,6 +166,60 @@ def getUpdateJournalEntryRequest(request, id: str = None):
         return JsonResponse(result, status=OK_RESPONSE_CODE)
     
 @csrf_exempt
+def getJournalEntryByTransactionIdRequest(request, transaction_id: str = None):
+    error_model = ErrorModel().model_dump()
+    result = {}
+    rrn = None
+    controller = None
+
+    try:
+        if not checkRequiredValidators(request.headers, required_headers):
+            error = copy.deepcopy(error_map.get(f"{WEB_CODE}0001"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                header=', '.join(required_headers)
+            )
+            result = error
+            raise Exception(error)
+        
+        rrn = request.headers.get(REQUEST_REFERENCE_NUMBER)
+        if transaction_id is None:
+            error = copy.deepcopy(error_map.get(f"{JNE_CODE}0008"))
+            result = error
+            raise Exception(error)
+        
+        method = request.method
+        controller = JournalEntryController(rrn) 
+        if method == GET_METHOD:
+            result = controller.getJournalEntryByTransactionId(transaction_id)
+            if type(result) is dict:
+                if set(result) == set(error_model):
+                    raise Exception(result)
+        # elif method == PUT_METHOD:
+        #     json_str = request.body.decode(UTF_8)
+        #     data = json.loads(json_str)
+        #     result = controller.updateAccount(id, data)
+        #     if type(result) is dict:
+        #         if set(result) == set(error_model):
+        #             raise Exception(result)
+        else:
+            loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_UPDATE_JOURNAL_ENTRY_REQUEST} - Unsupported Request Method")
+            error = copy.deepcopy(error_map.get(f"{WEB_CODE}0002"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                method=method
+            )
+            result = error
+            raise Exception(error)
+        
+    except Exception as e:
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_UPDATE_JOURNAL_ENTRY_REQUEST} - Caught something: {type(e).__name__} -> {e}")
+    finally:
+        del controller
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_UPDATE_JOURNAL_ENTRY_REQUEST} - Done: {result}")
+        if set(result) == set(error_model):
+            return JsonResponse(result, status=result[STATUS_KEY])
+        return JsonResponse(result, status=OK_RESPONSE_CODE)
+    
+@csrf_exempt
 def getTransactionIdCreditDebitAmountRequest(request, id: str = None):
     error_model = ErrorModel().model_dump()
     result = {}
@@ -183,7 +247,7 @@ def getTransactionIdCreditDebitAmountRequest(request, id: str = None):
             result = controller.getTransactionIdCreditDebitAmount(id)
             if type(result) is dict:
                 if set(result) == set(error_model):
-                    raise Exception(result)
+                    raise Exception(result)  
         else:
             loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_TRANSACTION_ID_CREDIT_DEBIT_AMOUNT_REQUEST} - Unsupported Request Method")
             error = copy.deepcopy(error_map.get(f"{WEB_CODE}0002"))
@@ -208,7 +272,7 @@ def setTransactionIdForReviewRequest(request, id: str = None):
     result = {}
     rrn = None
     controller = None
-
+    jv_controller = None
     try:
         if not checkRequiredValidators(request.headers, required_headers):
             error = copy.deepcopy(error_map.get(f"{WEB_CODE}0001"))
@@ -231,8 +295,17 @@ def setTransactionIdForReviewRequest(request, id: str = None):
             if type(result) is dict:
                 if set(result) == set(error_model):
                     raise Exception(result)
+                else:
+                   jv_controller = JournalVoucherController(rrn=rrn)
+                   result = jv_controller.createJournalVoucher(id)
+
+                   if type(result) is dict:
+                        if set(result) == set(error_model):
+                            # add revert to former status for journal entries
+                            raise Exception(result)
+                   
         else:
-            loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_TRANSACTION_ID_CREDIT_DEBIT_AMOUNT_REQUEST} - Unsupported Request Method")
+            loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.SET_TRANSACTION_ID_FOR_REVIEW_REQUEST} - Unsupported Request Method")
             error = copy.deepcopy(error_map.get(f"{WEB_CODE}0002"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 method=method
@@ -241,10 +314,10 @@ def setTransactionIdForReviewRequest(request, id: str = None):
             raise Exception(error)
         
     except Exception as e:
-        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_TRANSACTION_ID_CREDIT_DEBIT_AMOUNT_REQUEST} - Caught something: {type(e).__name__} -> {e}")
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.SET_TRANSACTION_ID_FOR_REVIEW_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
         del controller
-        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_TRANSACTION_ID_CREDIT_DEBIT_AMOUNT_REQUEST} - Done: {result}")
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.SET_TRANSACTION_ID_FOR_REVIEW_REQUEST} - Done: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
         return JsonResponse(result, status=OK_RESPONSE_CODE)

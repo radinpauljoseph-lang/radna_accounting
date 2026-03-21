@@ -14,6 +14,7 @@ from ...models.journal_entry import (
     journal_entry,
     journal_entry_history,
     je_meta,
+    je_status,
     je_types
 )
 from ...validators.journal_entry import (
@@ -148,7 +149,15 @@ class JournalEntryCore:
     def deleteRecordById(self, id: str) -> None:
         loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.DELETE_RECORD_BY_ID} - Start Delete Journal Entry Record: {id}")
         query_result = self.selectRecordById(id)
+
         if query_result is not None:
+            
+            current_status = query_result[DATA_KEY][je_meta.STATUS]
+            if current_status not in [je_status.NEW, je_status.REJECTED]:
+                loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.UPDATE_RECORD_BY_ID} - Invalid Journal Entry Record Status: {id}")
+                error = copy.deepcopy(error_map.get(f"{JNE_CODE}0027"))
+                raise Exception(error)
+            
             history_record = copy.deepcopy(query_result[DATA_KEY])
             history_record[je_meta.HISTORY_OPERATION] = "D"
             history_record = self.history_model(**history_record).model_dump()
@@ -196,6 +205,7 @@ class JournalEntryCore:
                     history_record = copy.deepcopy(item)
                     history_record[je_meta.STATUS] = status
                     history_record[je_meta.HISTORY_OPERATION] = "U"
+                    history_record[je_meta.UPDATED_DATE] = record[je_meta.UPDATED_DATE]
                     history_record[je_meta.HISTORY_DATE] = datetime.now()
                     history_record = self.history_model(**history_record).model_dump()
 
