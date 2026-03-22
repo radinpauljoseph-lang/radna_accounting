@@ -42,6 +42,7 @@ class JournalEntryStatuses:
         self.REJECTED = "REJECTED"
         self.APPROVED = "APPROVED"
         self.POSTED = "POSTED"
+        self.DELETED = "DELETED"
 
     def getStatusAsList(self):
         statuses = [
@@ -49,7 +50,8 @@ class JournalEntryStatuses:
             self.FOR_REVIEW,
             self.REJECTED,
             self.APPROVED,
-            self.POSTED
+            self.POSTED,
+            self.DELETED
         ]
         return statuses
 

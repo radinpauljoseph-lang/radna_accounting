@@ -47,6 +47,9 @@ class JournalEntryRequestMetaData:
         self.GET_JOURNAL_ENTRY_BY_TRANSACTION_ID_REQUEST = "getJournalEntryByTransactionIdRequest"
         self.GET_TRANSACTION_ID_CREDIT_DEBIT_AMOUNT_REQUEST = "getTransactionIdCreditDebitAmountRequest"
         self.SET_TRANSACTION_ID_FOR_REVIEW_REQUEST = "setTransactionIdForReviewRequest"
+        self.APPROVE_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST = "approveJournalEntriesByTransactionIdRequest"
+        self.REJECT_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST = "rejectJournalEntriesByTransactionIdRequest"
+        self.POST_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST = "postJournalEntriesByTransactionIdRequest"
 
 je_request_meta = JournalEntryRequestMetaData()
 
@@ -140,13 +143,18 @@ def getUpdateJournalEntryRequest(request, id: str = None):
             if type(result) is dict:
                 if set(result) == set(error_model):
                     raise Exception(result)
-        # elif method == PUT_METHOD:
-        #     json_str = request.body.decode(UTF_8)
-        #     data = json.loads(json_str)
-        #     result = controller.updateAccount(id, data)
-        #     if type(result) is dict:
-        #         if set(result) == set(error_model):
-        #             raise Exception(result)
+        elif method == PUT_METHOD:
+            json_str = request.body.decode(UTF_8)
+            data = json.loads(json_str)
+            result = controller.updateJournalEntry(id, data)
+            if type(result) is dict:
+                if set(result) == set(error_model):
+                    raise Exception(result)
+        elif method == DELETE_METHOD:
+            result = controller.deleteJournalEntry(id)
+            if type(result) is dict:
+                if set(result) == set(error_model):
+                    raise Exception(result)
         else:
             loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_UPDATE_JOURNAL_ENTRY_REQUEST} - Unsupported Request Method")
             error = copy.deepcopy(error_map.get(f"{WEB_CODE}0002"))
@@ -321,7 +329,150 @@ def setTransactionIdForReviewRequest(request, id: str = None):
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
         return JsonResponse(result, status=OK_RESPONSE_CODE)
+
+@csrf_exempt
+def approveJournalEntriesByTransactionIdRequest(request, id: str = None):
+    error_model = ErrorModel().model_dump()
+    result = {}
+    rrn = None
+    controller = None
+    jv_controller = None
+    try:
+        if not checkRequiredValidators(request.headers, required_headers):
+            error = copy.deepcopy(error_map.get(f"{WEB_CODE}0001"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                header=', '.join(required_headers)
+            )
+            result = error
+            raise Exception(error)
         
+        rrn = request.headers.get(REQUEST_REFERENCE_NUMBER)
+        if id is None:
+            error = copy.deepcopy(error_map.get(f"{JNE_CODE}0008"))
+            result = error
+            raise Exception(error)
+        
+        method = request.method
+        controller = JournalEntryController(rrn) 
+        if method == POST_METHOD:
+            result = controller.approveJournalEntryByTransactionId(id)
+            if type(result) is dict:
+                if set(result) == set(error_model):
+                    raise Exception(result)
+                   
+        else:
+            loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.APPROVE_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Unsupported Request Method")
+            error = copy.deepcopy(error_map.get(f"{WEB_CODE}0002"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                method=method
+            )
+            result = error
+            raise Exception(error)
+        
+    except Exception as e:
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.APPROVE_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Caught something: {type(e).__name__} -> {e}")
+    finally:
+        del controller
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.APPROVE_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Done: {result}")
+        if set(result) == set(error_model):
+            return JsonResponse(result, status=result[STATUS_KEY])
+        return JsonResponse(result, status=OK_RESPONSE_CODE)
+
+@csrf_exempt
+def rejectJournalEntriesByTransactionIdRequest(request, id: str = None):
+    error_model = ErrorModel().model_dump()
+    result = {}
+    rrn = None
+    controller = None
+    jv_controller = None
+    try:
+        if not checkRequiredValidators(request.headers, required_headers):
+            error = copy.deepcopy(error_map.get(f"{WEB_CODE}0001"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                header=', '.join(required_headers)
+            )
+            result = error
+            raise Exception(error)
+        
+        rrn = request.headers.get(REQUEST_REFERENCE_NUMBER)
+        if id is None:
+            error = copy.deepcopy(error_map.get(f"{JNE_CODE}0008"))
+            result = error
+            raise Exception(error)
+        
+        method = request.method
+        controller = JournalEntryController(rrn) 
+        if method == POST_METHOD:
+            result = controller.rejectJournalEntryByTransactionId(id)
+            if type(result) is dict:
+                if set(result) == set(error_model):
+                    raise Exception(result)
+                   
+        else:
+            loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.REJECT_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Unsupported Request Method")
+            error = copy.deepcopy(error_map.get(f"{WEB_CODE}0002"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                method=method
+            )
+            result = error
+            raise Exception(error)
+        
+    except Exception as e:
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.REJECT_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Caught something: {type(e).__name__} -> {e}")
+    finally:
+        del controller
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.REJECT_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Done: {result}")
+        if set(result) == set(error_model):
+            return JsonResponse(result, status=result[STATUS_KEY])
+        return JsonResponse(result, status=OK_RESPONSE_CODE)
+    
+@csrf_exempt
+def postJournalEntriesByTransactionIdRequest(request, id: str = None):
+    error_model = ErrorModel().model_dump()
+    result = {}
+    rrn = None
+    controller = None
+    jv_controller = None
+    try:
+        if not checkRequiredValidators(request.headers, required_headers):
+            error = copy.deepcopy(error_map.get(f"{WEB_CODE}0001"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                header=', '.join(required_headers)
+            )
+            result = error
+            raise Exception(error)
+        
+        rrn = request.headers.get(REQUEST_REFERENCE_NUMBER)
+        if id is None:
+            error = copy.deepcopy(error_map.get(f"{JNE_CODE}0008"))
+            result = error
+            raise Exception(error)
+        
+        method = request.method
+        controller = JournalEntryController(rrn) 
+        if method == POST_METHOD:
+            result = controller.postJournalEntryByTransactionId(id)
+            if type(result) is dict:
+                if set(result) == set(error_model):
+                    raise Exception(result)
+                   
+        else:
+            loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.POST_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Unsupported Request Method")
+            error = copy.deepcopy(error_map.get(f"{WEB_CODE}0002"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                method=method
+            )
+            result = error
+            raise Exception(error)
+        
+    except Exception as e:
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.POST_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Caught something: {type(e).__name__} -> {e}")
+    finally:
+        del controller
+        loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.POST_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Done: {result}")
+        if set(result) == set(error_model):
+            return JsonResponse(result, status=result[STATUS_KEY])
+        return JsonResponse(result, status=OK_RESPONSE_CODE)
 # @csrf_exempt
 # def get_update_journal_entry_request(request, id = None):
 #     controller = JournalEntryController() 

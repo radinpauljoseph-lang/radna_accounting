@@ -21,6 +21,8 @@ from ...validators.data_model import (
     DataModel
 )
 
+from sqlalchemy import extract
+
 class TransactionIdsCoreMetaData:
     def __init__(self):
         self.TRANSACTION_IDS_CORE = "TransactionIdsCore"
@@ -28,6 +30,7 @@ class TransactionIdsCoreMetaData:
         self.SELECT_IDS_BY_MONTH_YEAR = "selectIdsByMonthYear"
         self.SELECT_RECORD = "selectRecord"
         self.PARSE_TRNASCTION_ID = "parseTransactionId"
+        self.SELECT_RECORDS_BY_MONTH_YEAR = "selectRecordsByMonthYear"
 
 ti_core_meta = TransactionIdsCoreMetaData()
 
@@ -52,7 +55,7 @@ class TransactionIdsCore:
             conn.commit()
         
         loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.INSERT_RECORD} - Done Insert Transaction ID Record {obj}")
-
+    
     ## Refactor: get latest transaction ID
     # def selectIdsByMonthYear(self, month: int, year: int) -> dict:
     #     validator = None
@@ -170,6 +173,29 @@ class TransactionIdsCore:
             )
         finally:
             return result
+        
+    def selectRecordsByMonthYear(self, month: int, year: int) -> dict:
+        validator = None
+        result = None
+
+        loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORDS_BY_MONTH_YEAR} - Start Select Record By Month & Year")
+
+        with self.engine.connect() as conn:
+            validator = transaction_ids\
+                .select()\
+                .where(
+                    (transaction_ids.c.month == month) &
+                    (transaction_ids.c.year == year)
+                )
+            result = conn.execute(validator)
+
+        result = result.all()
+        result = [row._asdict() for row in result]
+        if len(result) > 0:
+            result = [self.dto_model(**data).model_dump() for data in result]
+            result = DataModel(data=result).model_dump()
+            loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORDS_BY_MONTH_YEAR} - {result}")
+        return result
         
 
 

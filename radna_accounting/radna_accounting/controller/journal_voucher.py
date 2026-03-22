@@ -18,6 +18,7 @@ from ..configs.response_codes.mapping import (
 )
 from ..models.chart_of_accounts import coa_meta
 from ..models.journal_voucher import jv_meta
+from ..models.journal_entry import je_meta
 from ..core.journal_voucher.journal_voucher import JournalVoucherCore
 from ..core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
 from ..core.journal_entry.journal_entry import JournalEntryCore

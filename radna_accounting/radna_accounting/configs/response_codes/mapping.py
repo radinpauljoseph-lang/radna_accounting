@@ -383,6 +383,72 @@ error_map = {
         message="Transaction Dates not equal",
         details=None
     ).model_dump(),
+    f"{JNE_CODE}0109": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0109",
+        message="\'{key}\' field not allowed",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0110": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0110",
+        message="Journal Entry {id}\'s status \'{status}\' not valid for update",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0111": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0111",
+        message="Journal Entry {id} already approved",
+        details=None
+    ).model_dump(),
+     f"{JNE_CODE}0112": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0112",
+        message="Journal Entry {id}\'s status \'{status}\' not valid for approval",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0113": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0113",
+        message="Error during transition to approval",
+        details=[]
+    ).model_dump(),
+    f"{JNE_CODE}0114": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0114",
+        message="Journal Entry {id} already rejected",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0115": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0115",
+        message="Journal Entry {id}\'s status \'{status}\' not valid for rejection",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0116": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0116",
+        message="Error during transition to approval",
+        details=[]
+    ).model_dump(),
+    f"{JNE_CODE}0117": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0117",
+        message="Journal Entry {id} already posted",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0118": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0118",
+        message="Journal Entry {id}\'s status \'{status}\' not valid for posting",
+        details=None
+    ).model_dump(),
+    f"{JNE_CODE}0119": ErrorModel(
+        status=400,
+        code=f"{JNE_CODE}0119",
+        message="Error during transition to approval",
+        details=[]
+    ).model_dump(),
 
     # Transaction IDs
     f"{TIS_CODE}0001": ErrorModel(
@@ -508,6 +574,24 @@ error_map = {
         message="Accounting Period already exists",
         details=None
     ).model_dump(),
+    f"{ACP_CODE}0103": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0103",
+        message="Accounting Period does not exist",
+        details=None
+    ).model_dump(),
+    f"{ACP_CODE}0104": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0104",
+        message="Accounting Period contains unposted records",
+        details=None
+    ).model_dump(),
+    f"{ACP_CODE}0105": ErrorModel(
+        status=400,
+        code=f"{ACP_CODE}0105",
+        message="Unable to close period due to unused transaction IDs",
+        details=None
+    ).model_dump(),
     f"{JNE_CODE}{ACP_CODE}0101": ErrorModel(
         status=400,
         code=f"{ACP_CODE}0101",
@@ -516,7 +600,7 @@ error_map = {
     ).model_dump(),
      f"{JNE_CODE}{ACP_CODE}0102": ErrorModel(
         status=400,
-        code=f"{ACP_CODE}0102",
+        code=f"{JNE_CODE}{ACP_CODE}0102",
         message="Accounting Period is already closed",
         details=None
     ).model_dump(),
