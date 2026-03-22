@@ -38,16 +38,20 @@ class JournalEntryTableMetaData:
 class JournalEntryStatuses:
     def __init__(self):
         self.NEW = "NEW"
-        self.POSTED = "POSTED"
+        self.FOR_REVIEW = "FOR_REVIEW"
         self.REJECTED = "REJECTED"
         self.APPROVED = "APPROVED"
+        self.POSTED = "POSTED"
+        self.DELETED = "DELETED"
 
     def getStatusAsList(self):
         statuses = [
             self.NEW,
-            self.POSTED,
+            self.FOR_REVIEW,
             self.REJECTED,
-            self.APPROVED
+            self.APPROVED,
+            self.POSTED,
+            self.DELETED
         ]
         return statuses
 

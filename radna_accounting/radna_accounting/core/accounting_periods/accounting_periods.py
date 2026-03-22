@@ -96,13 +96,19 @@ class AccountingPeriodsCore:
         return result
     
     def closeAccountingPeriod(self, month: int, year: int) -> None:
-        loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.JOURNAL_ENTRY_CORE}.{acp_core_meta.UPDATE_RECORD_BY_ID} - Start Update Accounting Period Record: month = {month}, year = {year}")
+        ## loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.ACCOUNTING_PERIODS_CORE}.{acp_core_meta.UPDATE_RECORD_BY_ID} - Start Update Accounting Period Record: month = {month}, year = {year}")
         record = self.selectRecord(
             month=month,
             year=year
         )
+
+        if record is None:
+            error = copy.deepcopy(error_map.get(f"{ACP_CODE}0103"))
+            raise Exception(error)
+        
+        record = record[DATA_KEY]
+        
         if record[acp_meta.STATUS] != acp_status.CLOSED:
-            record = record[DATA_KEY]
             record[acp_meta.UPDATED_DATE] = datetime.now()
             record[acp_meta.STATUS] = acp_status.CLOSED
 
@@ -114,7 +120,10 @@ class AccountingPeriodsCore:
 
                 update_statement = accounting_periods\
                     .update()\
-                    .where(accounting_periods.c.id == id)\
+                    .where(
+                        (accounting_periods.c.month == record[acp_meta.MONTH]) &
+                        (accounting_periods.c.year == record[acp_meta.YEAR])
+                    )\
                     .values(**record)
                 history_insert_statement = accounting_periods_history\
                     .insert()\
@@ -123,9 +132,9 @@ class AccountingPeriodsCore:
                 conn.execute(update_statement)
                 conn.execute(history_insert_statement)
                 conn.commit()
-                loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.ACCOUNTING_PERIODS_CORE}.{acp_core_meta.UPDATE_RECORD_BY_ID} - Done Update Journal Entry Record: {id}")
+                # loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.ACCOUNTING_PERIODS_CORE}.{acp_core_meta.UPDATE_RECORD_BY_ID} - Done Update Journal Entry Record: {id}")
         else:
-            loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.ACCOUNTING_PERIODS_CORE}.{acp_core_meta.UPDATE_RECORD_BY_ID} - Journal Entry Record Not Found: {id}")
+            # loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.ACCOUNTING_PERIODS_CORE}.{acp_core_meta.UPDATE_RECORD_BY_ID} - Journal Entry Record Not Found: {id}")
             error = copy.deepcopy(error_map.get(f"{ACP_CODE}0101"))
             raise Exception(error)
     
