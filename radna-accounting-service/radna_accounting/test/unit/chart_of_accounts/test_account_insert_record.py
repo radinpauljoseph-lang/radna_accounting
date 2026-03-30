@@ -1,15 +1,15 @@
 import pytest
 from datetime import datetime, timezone
-from ...models.chart_of_accounts import *
-from ...validators.chart_of_accounts import (
+from radna_accounting.models.chart_of_accounts import *
+from radna_accounting.validators.chart_of_accounts import (
     ChartOfAccountsModel
 )
-from ...core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
-from ...models.chart_of_accounts import coa_meta
-from ..utils.db.connector import (
+from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
+from radna_accounting.models.chart_of_accounts import coa_meta
+from radna_accounting.test.utils.db.connector import (
     SQLiteClient
 )
-from ..utils.helpers import *
+from radna_accounting.test.utils.helpers import *
 
 creds = {
     "file_name": "temp_state.db"
