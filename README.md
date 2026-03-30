@@ -3,7 +3,7 @@
 ## 🔧 Activate Virtual Environment
 
 ```bash
-venv\Scripts\activate
+.venv\Scripts\activate
 ```
 
 ## 🚀 Run the Django Server

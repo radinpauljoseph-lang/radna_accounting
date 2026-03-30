@@ -3,17 +3,17 @@ import logging
 import string
 import random
 from datetime import datetime, timezone
-from ...models.chart_of_accounts import coa_meta
-from ...validators.chart_of_accounts import (
+from radna_accounting.models.chart_of_accounts import coa_meta
+from radna_accounting.validators.chart_of_accounts import (
     ChartOfAccountsModel
 )
-from ...validators.data_model import DATA_KEY
-from ...core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
+from radna_accounting.validators.data_model import DATA_KEY
+from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
 
-from ..utils.db.connector import (
+from radna_accounting.test.utils.db.connector import (
     SQLiteClient
 )
-from ..utils.helpers import *
+from radna_accounting.test.utils.helpers import *
 
 logging.basicConfig(
     level=logging.INFO,

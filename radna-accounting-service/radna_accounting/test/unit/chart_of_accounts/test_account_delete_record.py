@@ -2,21 +2,21 @@ import pytest
 from faker import Faker
 import logging
 from datetime import datetime, timezone
-from ...models.chart_of_accounts import *
-from ...validators.chart_of_accounts import (
+from radna_accounting.models.chart_of_accounts import *
+from radna_accounting.validators.chart_of_accounts import (
     ChartOfAccountsModel,
     account_types
 )
-from ...core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
-from ...models.chart_of_accounts import (
+from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
+from radna_accounting.models.chart_of_accounts import (
     coa_meta,
     coa_types
 )
 
-from ..utils.db.connector import (
+from radna_accounting.test.utils.db.connector import (
     SQLiteClient
 )
-from ..utils.helpers import *
+from radna_accounting.test.utils.helpers import *
 
 logging.basicConfig(
     level=logging.INFO,
