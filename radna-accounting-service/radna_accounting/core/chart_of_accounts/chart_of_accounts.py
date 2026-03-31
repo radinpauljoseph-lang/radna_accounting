@@ -37,17 +37,20 @@ class ChartOfAccountsCore:
         self.engine = engine
         self.rrn = rrn
 
-    def insertRecord(self, obj: dict) -> None:
+    def insertRecord(self, obj: ChartOfAccountsModel) -> None:
         new_record = None
+
+        self.dto_model(**obj.model_dump())
+
         with self.engine.connect() as conn:
             loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.INSERT_RECORD} - Start Insert Account Record {obj}")
-            new_record = self.dto_model(**obj).model_dump()
-            new_record[coa_meta.CREATED_DATE] = datetime.now()
-            new_record[coa_meta.UPDATED_DATE] = new_record[coa_meta.CREATED_DATE]
+            new_record = copy.deepcopy(obj)
+            new_record.created_date = datetime.now()
+            new_record.updated_date = new_record.created_date
 
             insert_statement = chart_of_accounts\
                 .insert()\
-                .values(**new_record)
+                .values(**new_record.model_dump())
             loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.INSERT_RECORD} - Done Insert Account Record {obj}")
             conn.execute(insert_statement)
             conn.commit()
