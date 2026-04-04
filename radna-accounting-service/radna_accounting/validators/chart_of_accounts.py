@@ -30,20 +30,16 @@ class ChartOfAccountsModel(BaseModel):
         if not isinstance(account_id, str):
             error = copy.deepcopy(error_map.get(f"{COA_CODE}0001"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                model_name=model_name,
                 variable_type=type(account_id).__name__
             )
             raise Exception(error)
         if len(account_id) < coa_meta.ACCOUNT_ID_MIN_LENGTH:
             error = copy.deepcopy(error_map.get(f"{COA_CODE}0002"))
-            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                model_name=model_name
-            )
+            error[MESSAGE_KEY] = error[MESSAGE_KEY]
             raise Exception(error)
         if len(account_id) > coa_meta.ACCOUNT_ID_LENGTH:
             error = copy.deepcopy(error_map.get(f"{COA_CODE}0003"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                model_name=model_name,
                 account_id_length=coa_meta.ACCOUNT_ID_LENGTH
             )
             raise Exception(error)
@@ -55,22 +51,18 @@ class ChartOfAccountsModel(BaseModel):
         if not isinstance(account_name, str):
             error = copy.deepcopy(error_map.get(f"{COA_CODE}0004"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                model_name=model_name,
                 variable_type=type(account_name).__name__
             )
             raise Exception(error)
         if len(account_name) > coa_meta.NAME_LENGTH:
             error = copy.deepcopy(error_map.get(f"{COA_CODE}0005"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                model_name=model_name,
                 name_length=coa_meta.NAME_LENGTH
             )
             raise Exception(error)
         if len(account_name) <= 0:
             error = copy.deepcopy(error_map.get(f"{COA_CODE}0006"))
-            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                model_name=model_name
-            )
+            error[MESSAGE_KEY] = error[MESSAGE_KEY]
             raise Exception(error)
         return values
     
@@ -80,14 +72,12 @@ class ChartOfAccountsModel(BaseModel):
         if not isinstance(account_type, str):
             error = copy.deepcopy(error_map.get(f"{COA_CODE}0007"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                model_name=model_name,
                 variable_type=type(account_type).__name__
             )
             raise Exception(error)
         if account_type not in account_types:
             error = copy.deepcopy(error_map.get(f"{COA_CODE}0008"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                model_name=model_name,
                 account_type=account_type
             )
             raise Exception(error)
@@ -100,14 +90,12 @@ class ChartOfAccountsModel(BaseModel):
             if not isinstance(account_description, str) and account_description is not None:
                 error = copy.deepcopy(error_map.get(f"{COA_CODE}0009"))
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                    model_name=model_name,
                     variable_type=type(account_description).__name__
                 )
                 raise Exception(error)
             if account_description is not None and len(account_description) > coa_meta.DESCRIPTION_LENGTH:
                 error = copy.deepcopy(error_map.get(f"{COA_CODE}0010"))
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                    model_name=model_name,
                     description_length=coa_meta.DESCRIPTION_LENGTH
                 )
                 raise Exception(error)
@@ -120,22 +108,18 @@ class ChartOfAccountsModel(BaseModel):
             if not isinstance(account_mapping, str) and account_mapping is not None:
                 error = copy.deepcopy(error_map.get(f"{COA_CODE}0011"))
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                    model_name=model_name,
                     variable_type=type(account_mapping).__name__
                 )
                 raise Exception(error)
             if account_mapping is not None and len(account_mapping) > coa_meta.ACCOUNT_ID_LENGTH:
                 error = copy.deepcopy(error_map.get(f"{COA_CODE}0012"))
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                    model_name=model_name,
                     account_id_length=coa_meta.ACCOUNT_ID_LENGTH
                 )
                 raise Exception(error)
             if isinstance(values[coa_meta.ACCOUNT_ID], str) and account_mapping == values[coa_meta.ACCOUNT_ID]:
                 error = copy.deepcopy(error_map.get(f"{COA_CODE}0013"))
-                error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                    model_name=model_name
-                )
+                error[MESSAGE_KEY] = error[MESSAGE_KEY]
                 raise Exception(error)
         return values
     

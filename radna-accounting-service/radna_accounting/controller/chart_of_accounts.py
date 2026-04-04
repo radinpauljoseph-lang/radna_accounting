@@ -1,20 +1,20 @@
 import copy
 
-from ..utils.decorators.error_handling import catchAndLog
-from ..configs.config import (
+from radna_accounting.utils.decorators.error_handling import catchAndLog
+from radna_accounting.configs.config import (
     logger_types,
     loggerOutput,
     engine
 )
-from ..configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.mapping import (
     COA_CODE,
     MESSAGE_KEY,
     error_map
 )
-from ..core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
-from ..validators.chart_of_accounts import ChartOfAccountsModel
-from ..validators.data_model import DATA_KEY
-from ..models.chart_of_accounts import coa_meta
+from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
+from radna_accounting.validators.chart_of_accounts import ChartOfAccountsModel
+from radna_accounting.validators.data_model import DATA_KEY
+from radna_accounting.models.chart_of_accounts import coa_meta
 
 class ChartOfAccountsControllerMetaData:
     def __init__(self):
@@ -28,7 +28,6 @@ coa_controller_meta = ChartOfAccountsControllerMetaData()
 class ChartOfAccountsController:
     def __init__(self, rrn = None):
         self.validator_model = ChartOfAccountsModel
-        self.engine = engine
         self.core_model = ChartOfAccountsCore
         self.rrn = rrn
 
@@ -37,16 +36,15 @@ class ChartOfAccountsController:
         loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.CREATE_ACCOUNT} - Start Creating Account")
         return_data = {}
         account_obj = self.validator_model(**obj)
-        account_obj = account_obj.model_dump()
         core_model = self.core_model(self.rrn)
         
-        account_id_exists = core_model.selectRecordById(account_obj[coa_meta.ACCOUNT_ID])
-        account_name_exists = core_model.selectRecordByName(account_obj[coa_meta.NAME])
+        account_id_exists = core_model.selectRecordById(account_obj.account_id)
+        account_name_exists = core_model.selectRecordByName(account_obj.name)
         if not account_id_exists and not account_name_exists:
             record = copy.deepcopy(account_obj)
 
-            account_mapping_id_exists = core_model.selectRecordById(record[coa_meta.ACCOUNT_MAPPING])
-            if not account_mapping_id_exists and record[coa_meta.ACCOUNT_MAPPING] is not None:
+            account_mapping_id_exists = core_model.selectRecordById(record.account_mapping)
+            if not account_mapping_id_exists and record.account_mapping is not None:
                 error = copy.deepcopy(error_map.get(f"{COA_CODE}0104"))
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                     account_mapping=record[coa_meta.ACCOUNT_MAPPING]
@@ -55,20 +53,20 @@ class ChartOfAccountsController:
                 raise Exception(error)
                     
             core_model.insertRecord(record)
-            record = core_model.selectRecordById(record[coa_meta.ACCOUNT_ID])
+            record = core_model.selectRecordById(record.account_id)
             return_data = record
         else:
             del core_model
             if account_name_exists:
                 error = copy.deepcopy(error_map.get(f"{COA_CODE}0103"))
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                    account_name=account_obj[coa_meta.NAME]
+                    account_name=account_obj.name
                 )
                 raise Exception(error)
             else:
                 error = copy.deepcopy(error_map.get(f"{COA_CODE}0105"))
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                    account_id=account_obj[coa_meta.ACCOUNT_ID]
+                    account_id=account_obj.account_id
                 )
                 raise Exception(error)
             

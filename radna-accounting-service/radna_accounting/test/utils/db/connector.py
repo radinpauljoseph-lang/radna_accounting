@@ -42,7 +42,6 @@ class BaseDBClient:
     def __init__(self, creds):
         logging.info("Connecting to Database...")
         self.credentials = creds
-        self.columns = []
         self.query_string = str()
         self.data = None
 
@@ -56,13 +55,6 @@ class BaseDBClient:
     def set_sql_command(self, sql_script):
         self.query_string = sql_script
         return self
-
-    def set_columns(self, cols):
-        self.columns = cols
-        return self
-
-    def get_columns(self):
-        return self.columns
     
     def get_sql_command(self):
         return self.query_string
@@ -72,9 +64,10 @@ class BaseDBClient:
         return self
 
     def get_data(self):
+        cols = [desc[0] for desc in self.cursor.description]
         data = fetch_result(self.cursor)
-        data = convert_to_dict(data, self.columns)
-        data = convert_to_df(data, self.columns)
+        data = convert_to_dict(data, cols)
+        data = convert_to_df(data, cols)
         self.data = data
         logging.info(f"SQL Result:\n{data.head()}")
         
