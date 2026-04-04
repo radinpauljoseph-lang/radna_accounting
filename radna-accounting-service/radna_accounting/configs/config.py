@@ -2,6 +2,7 @@ import logging
 from uuid import uuid4
 from datetime import datetime, timezone
 import os
+import platform
 import configparser
 from pathlib import Path
 
@@ -33,15 +34,21 @@ def loggerOutput(rrn: str = None, method: str = logger_types.INFO, message: str 
     logger_type_map[method](logger_msg)
 
 BASE_DIR = Path(__file__).resolve().parent
-config_path = f"{str(BASE_DIR)}\\config.ini"
+
+slash = "\\" if platform.system() == "Windows" else "//"
+config_path = f"{str(BASE_DIR)}{slash}config.ini"
 
 ENV = os.environ['ENV']
+print("@@@@@@@@@@@@@@@@")
+print(f"ENV: {ENV}")
+print("@@@@@@@@@@@@@@@@")
 CONFIGS = configparser.ConfigParser()
-# CONFIGS.read("C:\\radna_accounting\\radna_accounting\\radna_accounting\\configs\\config.ini")
 
 CONFIGS.read(config_path)
 DB_CONNECTION = CONFIGS[f"{ENV}.database"]['connection_string']
-
+print("@@@@@@@@@@@@@@@@")
+print(f"DB_CONNECTION: {DB_CONNECTION}")
+print("@@@@@@@@@@@@@@@@")
 engine = create_engine(DB_CONNECTION, echo=False)
 
 meta = MetaData()

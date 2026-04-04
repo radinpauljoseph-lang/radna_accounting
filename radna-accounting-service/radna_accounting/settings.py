@@ -47,7 +47,7 @@ SECRET_KEY = 'django-insecure-$us5vup!l-@_kqcut-n6%huybdi=8@r(u1x176yz9_dk-s6rn%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "192.168.100.3"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "192.168.100.3", "host.docker.internal"]
 
 
 # Application definition
@@ -91,19 +91,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'radna_accounting.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+# # Database
+# # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "postgres",
-        "USER": "postgres",
-        "PASSWORD": "Password1",
-        "HOST": "127.0.0.1",
-        "PORT": "5432",
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "postgres",
+#         "USER": "postgres",
+#         "PASSWORD": "Password1",
+#         "HOST": "127.0.0.1",
+#         "PORT": "5432",
+#     }
+# }
 
 
 # Password validation
