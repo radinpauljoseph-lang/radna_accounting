@@ -1,22 +1,22 @@
 import copy
 from datetime import datetime
 
-from ...configs.config  import (
+from radna_accounting.configs.config  import (
     logger_types,
     loggerOutput
 )
-from ...configs.config import engine
-from ...configs.response_codes.mapping import (
+from radna_accounting.configs.config import engine
+from radna_accounting.configs.response_codes.mapping import (
     COA_CODE,
     MESSAGE_KEY,
     error_map
 )
-from ...models.chart_of_accounts import (
+from radna_accounting.models.chart_of_accounts import (
     chart_of_accounts,
     coa_meta
 )
-from ...validators.chart_of_accounts import ChartOfAccountsModel
-from ...validators.data_model import (
+from radna_accounting.validators.chart_of_accounts import ChartOfAccountsModel
+from radna_accounting.validators.data_model import (
     DATA_KEY,
     DataModel
 )

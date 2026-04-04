@@ -1,12 +1,12 @@
 import copy
 
-from ..utils.decorators.error_handling import catchAndLog
-from ..configs.config import (
+from radna_accounting.utils.decorators.error_handling import catchAndLog
+from radna_accounting.configs.config import (
     logger_types,
     loggerOutput,
     engine
 )
-from ..configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.mapping import (
     COA_CODE,
     MESSAGE_KEY,
     error_map
