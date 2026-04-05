@@ -52,7 +52,7 @@ class AccountTypes:
             self.EQUITY,
             self.REVENUE,
             self.EXPENSES,
-            self.COST
+            self.COST,
         ]
         return account_types
 

@@ -1,17 +1,8 @@
 import pytest
 from datetime import datetime, timezone
-from radna_accounting.models.chart_of_accounts import *
-from radna_accounting.validators.chart_of_accounts import (
-    ChartOfAccountsModel
-)
+from radna_accounting.validators.chart_of_accounts import ChartOfAccountsModel
 from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
-from radna_accounting.models.chart_of_accounts import coa_meta
-from radna_accounting.test.data.chart_of_accounts import (
-    ChartOfAccountsPayloadGenerator
-)
-from radna_accounting.test.utils.db.connector import (
-    SQLiteClient
-)
+from radna_accounting.test.data.chart_of_accounts import ChartOfAccountsPayloadGenerator
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
 
 creds = {

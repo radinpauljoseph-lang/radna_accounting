@@ -1,205 +1,284 @@
-# import pytest
-# from faker import Faker
-# import logging
-# from datetime import datetime, timezone
-# from radna_accounting.models.chart_of_accounts import *
-# from radna_accounting.validators.chart_of_accounts import (
-#     ChartOfAccountsModel,
-#     account_types
-# )
-# from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
-# from radna_accounting.models.chart_of_accounts import (
-#     coa_meta,
-#     coa_types
-# )
+import pytest
+from faker import Faker
+from datetime import datetime, timezone
+from radna_accounting.validators.chart_of_accounts import ChartOfAccountsModel
+from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
+from radna_accounting.models.chart_of_accounts import coa_types
 
-# from radna_accounting.test.utils.db.connector import (
-#     SQLiteClient
-# )
-# from radna_accounting.test.utils.helpers import *
+from radna_accounting.test.data.chart_of_accounts import ChartOfAccountsPayloadGenerator
+from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
 
-# logging.basicConfig(
-#     level=logging.INFO,
-#     format='%(asctime)s - %(levelname)s - %(message)s'
-# )
+creds = {
+    "database": "temp_state.db"
+}
 
+class TestAccounUpdateRecord:
+    def test_happy_path_update_name(self):
+        account_name = Faker().bs()
+        core_model = ChartOfAccountsCore()
+        payload = ChartOfAccountsPayloadGenerator().model_dump()
+        payload = ChartOfAccountsModel(**payload)
+        current_datetime = datetime.now(timezone.utc)
+        current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
 
-# creds = {
-#     "file_name": "temp_state.db"
-# }
+        core_model.insertRecord(payload)
+        updated_datetime = datetime.now(timezone.utc)
+        updated_datetime = updated_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(updated_datetime.microsecond / 1000):03d}"
+        
+        where_clause_values = {
+            "coa_account_id": payload.account_id,
+            "coa_name": account_name,
+            "coa_type": payload.type,
+            "coa_description": payload.description,
+            "coa_account_mapping": "",
+            "coa_created_date": current_datetime,
+            "coa_updated_date": updated_datetime
+        }
+        payload.name = account_name
+        core_model.updateRecordById(payload.account_id, payload)
 
-# class TestAccounUpdateRecord:
-#     def test_happy_path_update_name(self, generate_account_request_payload):
-#         account_name = Faker().bs()
-#         core_model = ChartOfAccountsCore()
-#         payload = generate_account_request_payload
-#         payload = ChartOfAccountsModel(**payload).model_dump()
-#         current_datetime = datetime.now(timezone.utc)
-#         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
+        db_obj = SQLiteClient(creds)\
+            .connect(creds)\
+            .setCommand(f"""
+            SELECT
+                account_id, 
+                name,
+                type,
+                description, 
+                account_mapping, 
+                created_date, 
+                updated_date
+            FROM chart_of_accounts
+            WHERE 1=1
+            AND account_id = :coa_account_id
+            AND name = :coa_name
+            AND type = :coa_type
+            AND description = :coa_description
+            AND (
+                account_mapping IS NULL
+                OR (
+                    account_mapping IS NOT NULL
+                    AND account_mapping = :coa_account_mapping
+                )
+            )
+            AND created_date >= :coa_created_date
+            AND updated_date >= :coa_updated_date
+        """
+        )\
+        .execute(where_clause_values)
 
-#         core_model.insertRecord(payload)
-#         updated_datetime = datetime.now(timezone.utc)
-#         updated_datetime = updated_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(updated_datetime.microsecond / 1000):03d}"
-#         where_clause_values = {
-#             "<coa_account_id>": payload[coa_meta.ACCOUNT_ID],
-#             "<coa_name>": account_name,
-#             "<coa_type>": payload[coa_meta.TYPE],
-#             "<coa_description>": payload[coa_meta.DESCRIPTION],
-#             "<coa_created_date>": current_datetime,
-#             "<coa_updated_date>": updated_datetime
-#         }
+        result = db_obj.getData()
+        del db_obj
 
-#         payload[coa_meta.NAME] = account_name
-#         core_model.updateRecordById(payload[coa_meta.ACCOUNT_ID], payload)
-
-#         contents = load_mapped_sql_files("Chart Of Accounts", "Uniqueness Test", where_clause_values)
-#         db_obj = SQLiteClient(creds)
-#         db_obj.set_sql_command(contents["sql"])\
-#             .set_columns(contents["columns"])
-#         result = db_obj.execute()\
-#             .get_data()
-#         del db_obj
-
-#         assert result.shape[0] == 1
+        assert result.shape[0] == 1
     
-#     def test_happy_path_update_description_none(self, generate_account_request_payload):
-#         account_description = Faker().bs()
-#         core_model = ChartOfAccountsCore()
-#         payload = generate_account_request_payload
-#         payload = ChartOfAccountsModel(**payload).model_dump()
-#         current_datetime = datetime.now(timezone.utc)
-#         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
+    def test_happy_path_update_description_none(self):
+        account_description = Faker().bs()
+        core_model = ChartOfAccountsCore()
+        payload = ChartOfAccountsPayloadGenerator(
+            description=account_description
+        ).model_dump()
+        payload = ChartOfAccountsModel(**payload)
+        current_datetime = datetime.now(timezone.utc)
+        current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
 
-#         core_model.insertRecord(payload)
-#         updated_datetime = datetime.now(timezone.utc)
-#         updated_datetime = updated_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(updated_datetime.microsecond / 1000):03d}"
-#         where_clause_values = {
-#             "<coa_account_id>": payload[coa_meta.ACCOUNT_ID],
-#             "<coa_name>": payload[coa_meta.NAME],
-#             "<coa_type>": payload[coa_meta.TYPE],
-#             "<coa_description>": account_description,
-#             "<coa_created_date>": current_datetime,
-#             "<coa_updated_date>": updated_datetime
-#         }
+        core_model.insertRecord(payload)
+        updated_datetime = datetime.now(timezone.utc)
+        updated_datetime = updated_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(updated_datetime.microsecond / 1000):03d}"
 
-#         payload[coa_meta.DESCRIPTION] = None
-#         core_model.updateRecordById(payload[coa_meta.ACCOUNT_ID], payload)
+        where_clause_values = {
+            "coa_account_id": payload.account_id,
+            "coa_name": payload.name,
+            "coa_type": payload.type,
+            "coa_account_mapping": "",
+            "coa_created_date": current_datetime,
+            "coa_updated_date": updated_datetime
+        }
 
-#         contents = load_mapped_sql_files("Chart Of Accounts", "Uniqueness Test with description equal to Null", where_clause_values)
-#         db_obj = SQLiteClient(creds)
-#         db_obj.set_sql_command(contents["sql"])\
-#             .set_columns(contents["columns"])
-#         result = db_obj.execute()\
-#             .get_data()
-#         del db_obj
+        payload.description = None
+        core_model.updateRecordById(payload.account_id, payload)
 
-#         assert result.shape[0] == 1
+        db_obj = SQLiteClient(creds)\
+            .connect(creds)\
+            .setCommand(f"""
+            SELECT
+                account_id, 
+                name,
+                type,
+                description, 
+                account_mapping, 
+                created_date, 
+                updated_date
+            FROM chart_of_accounts
+            WHERE 1=1
+            AND account_id = :coa_account_id
+            AND name = :coa_name
+            AND type = :coa_type
+            AND description IS NULL
+            AND (
+                account_mapping IS NULL
+                OR (
+                    account_mapping IS NOT NULL
+                    AND account_mapping = :coa_account_mapping
+                )
+            )
+            AND created_date >= :coa_created_date
+            AND updated_date >= :coa_updated_date
+        """
+        )\
+        .execute(where_clause_values)
 
-#     def test_happy_path_update_description(self, generate_account_request_payload):
-#         account_description = Faker().bs()
-#         core_model = ChartOfAccountsCore()
-#         payload = generate_account_request_payload
-#         payload = ChartOfAccountsModel(**payload).model_dump()
-#         current_datetime = datetime.now(timezone.utc)
-#         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
+        result = db_obj.getData()
+        del db_obj
 
-#         core_model.insertRecord(payload)
-#         updated_datetime = datetime.now(timezone.utc)
-#         updated_datetime = updated_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(updated_datetime.microsecond / 1000):03d}"
-#         where_clause_values = {
-#             "<coa_account_id>": payload[coa_meta.ACCOUNT_ID],
-#             "<coa_name>": payload[coa_meta.NAME],
-#             "<coa_type>": payload[coa_meta.TYPE],
-#             "<coa_description>": account_description,
-#             "<coa_created_date>": current_datetime,
-#             "<coa_updated_date>": updated_datetime
-#         }
+        assert result.shape[0] == 1
 
-#         payload[coa_meta.DESCRIPTION] = account_description
-#         core_model.updateRecordById(payload[coa_meta.ACCOUNT_ID], payload)
+    def test_happy_path_update_description(self):
+        account_description = Faker().bs()
+        core_model = ChartOfAccountsCore()
+        payload = ChartOfAccountsPayloadGenerator().model_dump()
+        payload = ChartOfAccountsModel(**payload)
+        current_datetime = datetime.now(timezone.utc)
+        current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
 
-#         contents = load_mapped_sql_files("Chart Of Accounts", "Uniqueness Test", where_clause_values)
-#         db_obj = SQLiteClient(creds)
-#         db_obj.set_sql_command(contents["sql"])\
-#             .set_columns(contents["columns"])
-#         result = db_obj.execute()\
-#             .get_data()
-#         del db_obj
+        core_model.insertRecord(payload)
+        updated_datetime = datetime.now(timezone.utc)
+        updated_datetime = updated_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(updated_datetime.microsecond / 1000):03d}"
+        where_clause_values = {
+            "coa_account_id": payload.account_id,
+            "coa_name": payload.name,
+            "coa_type": payload.type,
+            "coa_description": account_description,
+            "coa_account_mapping": "",
+            "coa_created_date": current_datetime,
+            "coa_updated_date": updated_datetime
+        }
 
-#         assert result.shape[0] == 1
+        payload.description = account_description
+        core_model.updateRecordById(payload.account_id, payload)
 
-#     @pytest.mark.parametrize("param", [coa_types.ASSET, coa_types.LIABILITY, coa_types.EQUITY, coa_types.LIABILITY, coa_types.REVENUE, coa_types.COST])
-#     def test_happy_path_update_account_type(self, generate_account_request_payload, param):
-#         core_model = ChartOfAccountsCore()
-#         payload = generate_account_request_payload
-#         payload = ChartOfAccountsModel(**payload).model_dump()
-#         current_datetime = datetime.now(timezone.utc)
-#         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
+        db_obj = SQLiteClient(creds)\
+            .connect(creds)\
+            .setCommand(f"""
+            SELECT
+                account_id, 
+                name,
+                type,
+                description, 
+                account_mapping, 
+                created_date, 
+                updated_date
+            FROM chart_of_accounts
+            WHERE 1=1
+            AND account_id = :coa_account_id
+            AND name = :coa_name
+            AND type = :coa_type
+            AND description = :coa_description
+            AND (
+                account_mapping IS NULL
+                OR (
+                    account_mapping IS NOT NULL
+                    AND account_mapping = :coa_account_mapping
+                )
+            )
+            AND created_date >= :coa_created_date
+            AND updated_date >= :coa_updated_date
+        """
+        )\
+        .execute(where_clause_values)
 
-#         core_model.insertRecord(payload)
-#         updated_datetime = datetime.now(timezone.utc)
-#         updated_datetime = updated_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(updated_datetime.microsecond / 1000):03d}"
-#         where_clause_values = {
-#             "<coa_account_id>": payload[coa_meta.ACCOUNT_ID],
-#             "<coa_name>": payload[coa_meta.NAME],
-#             "<coa_type>": param,
-#             "<coa_description>": payload[coa_meta.DESCRIPTION],
-#             "<coa_created_date>": current_datetime,
-#             "<coa_updated_date>": updated_datetime
-#         }
+        result = db_obj.getData()
+        del db_obj
 
-#         payload[coa_meta.TYPE] = param
-#         core_model.updateRecordById(payload[coa_meta.ACCOUNT_ID], payload)
+        assert result.shape[0] == 1
 
-#         contents = load_mapped_sql_files("Chart Of Accounts", "Uniqueness Test", where_clause_values)
-#         db_obj = SQLiteClient(creds)
-#         db_obj.set_sql_command(contents["sql"])\
-#             .set_columns(contents["columns"])
-#         result = db_obj.execute()\
-#             .get_data()
-#         del db_obj
+    @pytest.mark.parametrize("param", [coa_types.ASSET, coa_types.LIABILITY, coa_types.EQUITY, coa_types.LIABILITY, coa_types.REVENUE, coa_types.COST])
+    def test_happy_path_update_account_type(self, param):
+        core_model = ChartOfAccountsCore()
+        payload = ChartOfAccountsPayloadGenerator().model_dump()
+        payload = ChartOfAccountsModel(**payload)
+        current_datetime = datetime.now(timezone.utc)
+        current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
 
-#         assert result.shape[0] == 1
+        core_model.insertRecord(payload)
+        updated_datetime = datetime.now(timezone.utc)
+        updated_datetime = updated_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(updated_datetime.microsecond / 1000):03d}"
+        where_clause_values = {
+            "coa_account_id": payload.account_id,
+            "coa_name": payload.name,
+            "coa_type": param,
+            "coa_description": payload.description,
+            "coa_account_mapping": "",
+            "coa_created_date": current_datetime,
+            "coa_updated_date": current_datetime
+        }
 
-#     def test_duplicate_name_error(self):
-#         expected = "UNIQUE constraint failed"
-#         core_model = ChartOfAccountsCore()
-#         current_datetime = datetime.now(timezone.utc)
-#         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
-#         first_record = None
-#         second_record = None
-#         for index in range(2):
-#             now = datetime.now(timezone.utc)
-#             payload = {
-#                 coa_meta.ACCOUNT_ID: ''.join(random.choices(string.digits, k=6)),
-#                 coa_meta.NAME: fake.bs(),
-#                 coa_meta.TYPE: account_types[random.randrange(0, len(account_types))],
-#                 coa_meta.DESCRIPTION: fake.bs(),
-#                 coa_meta.ACCOUNT_MAPPING: None,
-#                 coa_meta.CREATED_DATE: now.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(now.microsecond / 1000):03d}",
-#                 coa_meta.UPDATED_DATE: now.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(now.microsecond / 1000):03d}"
-#             }
-#             payload = ChartOfAccountsModel(**payload).model_dump()
-#             core_model.insertRecord(payload)
-#             if index == 0:
-#                 first_record = payload
-#             else:
-#                 second_record = payload
+        payload.type = param
+        core_model.updateRecordById(payload.account_id, payload)
 
-#         second_record[coa_meta.NAME] = first_record[coa_meta.NAME]
-#         with pytest.raises(Exception) as excinfo:
-#             core_model.updateRecordById(second_record[coa_meta.ACCOUNT_ID], second_record)
-#         logging.info(str(excinfo))
-#         assert expected in str(excinfo)
+        db_obj = SQLiteClient(creds)\
+            .connect(creds)\
+            .setCommand(f"""
+            SELECT
+                account_id, 
+                name,
+                type,
+                description, 
+                account_mapping, 
+                created_date, 
+                updated_date
+            FROM chart_of_accounts
+            WHERE 1=1
+            AND account_id = :coa_account_id
+            AND name = :coa_name
+            AND type = :coa_type
+            AND description = :coa_description
+            AND (
+                account_mapping IS NULL
+                OR (
+                    account_mapping IS NOT NULL
+                    AND account_mapping = :coa_account_mapping
+                )
+            )
+            AND created_date >= :coa_created_date
+            AND updated_date >= :coa_updated_date
+        """
+        )\
+        .execute(where_clause_values)
 
-#     def test_using_nonexistent_record_value(self, generate_account_request_payload):
-#             core_model = ChartOfAccountsCore()
-#             payload = generate_account_request_payload
-#             payload = ChartOfAccountsModel(**payload).model_dump()
-#             expected = "COA0101"
+        result = db_obj.getData()
+        del db_obj
+        assert result.shape[0] == 1
+
+    def test_duplicate_name_error(self):
+        expected = "UNIQUE constraint failed"
+        core_model = ChartOfAccountsCore()
+        current_datetime = datetime.now(timezone.utc)
+        current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
+        first_record = None
+        second_record = None
+        for index in range(2):
+            payload = ChartOfAccountsPayloadGenerator().model_dump()
+            payload = ChartOfAccountsModel(**payload)
+            core_model.insertRecord(payload)
+            if index == 0:
+                first_record = payload
+            else:
+                second_record = payload
+
+        second_record.name = first_record.name
+
+        with pytest.raises(Exception) as excinfo:
+            core_model.updateRecordById(second_record.account_id, second_record)
+        assert expected in str(excinfo)
+
+    def test_using_nonexistent_record_value(self):
+            core_model = ChartOfAccountsCore()
+            payload = ChartOfAccountsPayloadGenerator().model_dump()
+            payload = ChartOfAccountsModel(**payload)
+            expected = "COA0101"
             
-#             with pytest.raises(Exception) as excinfo:
-#                 core_model.updateRecordById(payload[coa_meta.ACCOUNT_ID], payload)
-#             logging.info(str(excinfo))
-#             assert expected in str(excinfo)
+            with pytest.raises(Exception) as excinfo:
+                core_model.updateRecordById(payload.account_id, payload)
+            assert expected in str(excinfo)
 

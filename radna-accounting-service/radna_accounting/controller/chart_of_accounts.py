@@ -47,7 +47,7 @@ class ChartOfAccountsController:
             if not account_mapping_id_exists and record.account_mapping is not None:
                 error = copy.deepcopy(error_map.get(f"{COA_CODE}0104"))
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                    account_mapping=record[coa_meta.ACCOUNT_MAPPING]
+                    account_mapping=record.account_mapping
                 )
                 del core_model
                 raise Exception(error)
@@ -92,12 +92,10 @@ class ChartOfAccountsController:
             temp_obj = copy.deepcopy(obj)
             temp_obj[coa_meta.ACCOUNT_ID] = id
             account_obj = self.validator_model(**temp_obj)
-            account_obj = account_obj.model_dump()
 
             record = copy.deepcopy(account_id_exists[DATA_KEY])
-            record[coa_meta.ACCOUNT_MAPPING] = account_obj[coa_meta.ACCOUNT_MAPPING]
+            record[coa_meta.ACCOUNT_MAPPING] = account_obj.account_mapping
             record = self.validator_model(**record)
-            record = record.model_dump()
             for key in obj.keys():
                 if key not in allowed_fields:
                     error = copy.deepcopy(error_map.get(f"{COA_CODE}0102"))
@@ -106,12 +104,12 @@ class ChartOfAccountsController:
                     )
                     del core_model
                     raise Exception(error)
-            if account_obj[coa_meta.NAME] != record[coa_meta.NAME]:
-                account_name_exists = core_model.selectRecordByName(account_obj[coa_meta.NAME])
+            if account_obj.name != record[coa_meta.NAME]:
+                account_name_exists = core_model.selectRecordByName(account_obj.name)
                 if account_name_exists:
                     error = copy.deepcopy(error_map.get(f"{COA_CODE}0103"))
                     error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                        account_name=account_obj[coa_meta.NAME]
+                        account_name=account_obj.name
                     )
                     del core_model
                     raise Exception(error)
@@ -124,11 +122,12 @@ class ChartOfAccountsController:
                 )
                 del core_model
                 raise Exception(error)
-                
+            
             for key in account_obj.keys():
                 if key in allowed_fields:
                     record[key] = account_obj[key]
-                
+
+            record = self.validator_model(**record.model_dump())
             core_model.updateRecordById(id, record)
             record = core_model.selectRecordById(id)
             return_data = record

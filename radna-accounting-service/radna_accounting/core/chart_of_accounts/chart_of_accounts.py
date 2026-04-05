@@ -31,6 +31,7 @@ class ChartOfAccountsCoreMetaData:
         self.DELETE_RECORD_BY_ID = "deleteRecordById"
 
 coa_core_meta = ChartOfAccountsCoreMetaData()
+
 class ChartOfAccountsCore:
     def __init__(self, rrn = None) -> None:
         self.dto_model = ChartOfAccountsModel
@@ -96,21 +97,24 @@ class ChartOfAccountsCore:
         loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.SELECT_RECORD_BY_NAME} - Start Select Record By Name")
         return result
     
-    def updateRecordById(self, account_id: str, obj: dict) -> None:
+    def updateRecordById(self, account_id: str, obj: ChartOfAccountsModel) -> None:
+        
+        self.dto_model(**obj.model_dump())
+
         loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.UPDATE_RECORD_BY_ID} - Start Update Account Record: {account_id}")
+        
         record = copy.deepcopy(obj)
-        record[coa_meta.ACCOUNT_ID] = account_id
-        record = self.dto_model(**record).model_dump()
-        record[coa_meta.UPDATED_DATE] = datetime.now()
+        record.account_id = account_id
+        record.updated_date = datetime.now()
 
         query_result = self.selectRecordById(account_id)
         if query_result is not None:
             with self.engine.connect() as conn:
-                record[coa_meta.CREATED_DATE] = query_result[DATA_KEY][coa_meta.CREATED_DATE]
+                record.created_date = query_result[DATA_KEY][coa_meta.CREATED_DATE]
                 update_statement = chart_of_accounts\
                     .update()\
                     .where(chart_of_accounts.c.account_id == account_id)\
-                    .values(**record)
+                    .values(**record.model_dump())
                 conn.execute(update_statement)
                 conn.commit()
                 loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.UPDATE_RECORD_BY_ID} - Done Update Account Record: {account_id}")
@@ -122,15 +126,15 @@ class ChartOfAccountsCore:
             )
             raise Exception(error)
     
-    def deleteRecordById(self, account_id: str) -> None:
-        loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.DELETE_RECORD_BY_ID} - Start Delete Account Record: {account_id}")
-        with self.engine.connect() as conn:
-            delete_statement = chart_of_accounts\
-                .delete()\
-                .where(chart_of_accounts.c.account_id == account_id)
-            conn.execute(delete_statement)
-            conn.commit()
-            loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.DELETE_RECORD_BY_ID} - Start Done Account Record: {account_id}")
+    # def deleteRecordById(self, account_id: str) -> None:
+    #     loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.DELETE_RECORD_BY_ID} - Start Delete Account Record: {account_id}")
+    #     with self.engine.connect() as conn:
+    #         delete_statement = chart_of_accounts\
+    #             .delete()\
+    #             .where(chart_of_accounts.c.account_id == account_id)
+    #         conn.execute(delete_statement)
+    #         conn.commit()
+    #         loggerOutput(rrn=self.rrn, message=f"{coa_core_meta.CHART_OF_ACCOUNTS_CORE}.{coa_core_meta.DELETE_RECORD_BY_ID} - Start Done Account Record: {account_id}")
 
 
 
