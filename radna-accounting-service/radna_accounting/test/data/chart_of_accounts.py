@@ -37,4 +37,11 @@ class ChartOfAccountsPayloadGenerator(BaseModel):
                 values[coa_payload_meta.CREATED_DATE] = current_datetime
                 values[coa_payload_meta.UPDATED_DATE] = current_datetime
         return values
+    
+class ChartOfAccountsUpdatePayloadGenerator(BaseModel):
+    name: Any = None
+    type: Any = None
+    description: Any = None
+    account_mapping: Any = None
+
 

@@ -91,11 +91,11 @@ class ChartOfAccountsController:
         if account_id_exists:
             temp_obj = copy.deepcopy(obj)
             temp_obj[coa_meta.ACCOUNT_ID] = id
-            account_obj = self.validator_model(**temp_obj)
+            account_obj = self.validator_model(**temp_obj).model_dump()
 
             record = copy.deepcopy(account_id_exists[DATA_KEY])
-            record[coa_meta.ACCOUNT_MAPPING] = account_obj.account_mapping
-            record = self.validator_model(**record)
+            record[coa_meta.ACCOUNT_MAPPING] = account_obj[coa_meta.ACCOUNT_MAPPING]
+            
             for key in obj.keys():
                 if key not in allowed_fields:
                     error = copy.deepcopy(error_map.get(f"{COA_CODE}0102"))
@@ -104,12 +104,13 @@ class ChartOfAccountsController:
                     )
                     del core_model
                     raise Exception(error)
-            if account_obj.name != record[coa_meta.NAME]:
-                account_name_exists = core_model.selectRecordByName(account_obj.name)
+                
+            if account_obj[coa_meta.NAME] != record[coa_meta.NAME]:
+                account_name_exists = core_model.selectRecordByName(account_obj[coa_meta.NAME])
                 if account_name_exists:
                     error = copy.deepcopy(error_map.get(f"{COA_CODE}0103"))
                     error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-                        account_name=account_obj.name
+                        account_name=account_obj[coa_meta.NAME]
                     )
                     del core_model
                     raise Exception(error)
@@ -127,7 +128,7 @@ class ChartOfAccountsController:
                 if key in allowed_fields:
                     record[key] = account_obj[key]
 
-            record = self.validator_model(**record.model_dump())
+            record = self.validator_model(**record)
             core_model.updateRecordById(id, record)
             record = core_model.selectRecordById(id)
             return_data = record

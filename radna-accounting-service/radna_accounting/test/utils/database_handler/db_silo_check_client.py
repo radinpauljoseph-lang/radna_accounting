@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+import copy
+import pandas as pd
+from sqlalchemy import create_engine, text
 
 class DbSiloCheckClient(ABC):
 
@@ -13,19 +16,32 @@ class DbSiloCheckClient(ABC):
     def connect(self):
         pass
 
-    @abstractmethod
-    def setCommand(self):
-        pass
+    def setCommand(self, sql_command: str):
+        self.command = sql_command
 
-    @abstractmethod
-    def execute(self):
-        pass
+        return self
+    
+    def execute(self, params: dict = None):
+        engine = self.engine
+        parameters = {} if params is None else copy.deepcopy(params)
 
-    @abstractmethod
+        with engine.connect() as conn:
+            self.result = conn.execute(
+                text(self.command),
+                parameters
+            )
+        
+        return self
+    
+    def getData(self, result_type: str = "pandas"):
+        if result_type == "pandas":
+            self.data = pd.DataFrame(
+                self.result,
+                columns=self.result.keys()
+            )
+        if result_type == "dict":
+            self.data = self.result.mappings().all()
+        return self.data
+    
     def store(self):
         pass
-
-    @abstractmethod
-    def getData(self):
-        pass
-

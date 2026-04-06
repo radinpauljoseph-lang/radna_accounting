@@ -15,13 +15,11 @@ creds = {
     "database": "temp_state.db"
 }
 
-class TestChartOfAccountsCreateAccount:
+class TestChartOfAccountsControllerCreateAccount:
 
     def test_happy_path(self):
         payload = ChartOfAccountsPayloadGenerator(is_dates_included=False).model_dump()
         payload[coa_meta.DESCRIPTION] = None
-        del payload[coa_meta.CREATED_DATE]
-        del payload[coa_meta.UPDATED_DATE]
 
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
@@ -73,16 +71,12 @@ class TestChartOfAccountsCreateAccount:
     def test_happy_path_with_account_mapping(self):
         payload = ChartOfAccountsPayloadGenerator(is_dates_included=False).model_dump()
         payload[coa_meta.DESCRIPTION] = None
-        del payload[coa_meta.CREATED_DATE]
-        del payload[coa_meta.UPDATED_DATE]
 
         ChartOfAccountsController().createAccount(payload)
         
-        payload[coa_meta.ACCOUNT_MAPPING] = payload[coa_meta.ACCOUNT_ID]
-        for key in payload.keys():
-            if key != coa_meta.ACCOUNT_MAPPING:
-                payload[key] = ChartOfAccountsPayloadGenerator(is_dates_included=False)\
-                    .model_dump()[key]
+        payload = ChartOfAccountsPayloadGenerator(
+            account_mapping=payload[coa_meta.ACCOUNT_ID]
+        ).model_dump()
                 
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
@@ -135,8 +129,6 @@ class TestChartOfAccountsCreateAccount:
     def test_happy_path_with_description(self):
         payload = ChartOfAccountsPayloadGenerator(is_dates_included=False).model_dump()
         payload[coa_meta.DESCRIPTION] = Faker().bs()
-        del payload[coa_meta.CREATED_DATE]
-        del payload[coa_meta.UPDATED_DATE]
 
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
@@ -192,8 +184,6 @@ class TestChartOfAccountsCreateAccount:
         payload = ChartOfAccountsPayloadGenerator(is_dates_included=False).model_dump()
         payload[coa_meta.DESCRIPTION] = None
         payload[coa_meta.TYPE] = param
-        del payload[coa_meta.CREATED_DATE]
-        del payload[coa_meta.UPDATED_DATE]
 
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
@@ -245,15 +235,12 @@ class TestChartOfAccountsCreateAccount:
     def test_create_with_already_existing_account_id(self):
         payload = ChartOfAccountsPayloadGenerator(is_dates_included=False).model_dump()
         payload[coa_meta.DESCRIPTION] = None
-        del payload[coa_meta.CREATED_DATE]
-        del payload[coa_meta.UPDATED_DATE]
 
         ChartOfAccountsController().createAccount(payload)
 
-        for key in payload.keys():
-            if key != coa_meta.ACCOUNT_ID:
-                payload[key] = ChartOfAccountsPayloadGenerator(is_dates_included=False)\
-                    .model_dump()[key]
+        payload = ChartOfAccountsPayloadGenerator(
+            account_id=payload[coa_meta.ACCOUNT_ID]
+        ).model_dump()
                 
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
@@ -308,15 +295,12 @@ class TestChartOfAccountsCreateAccount:
     def test_create_with_already_existing_account_name(self):
         payload = ChartOfAccountsPayloadGenerator(is_dates_included=False).model_dump()
         payload[coa_meta.DESCRIPTION] = None
-        del payload[coa_meta.CREATED_DATE]
-        del payload[coa_meta.UPDATED_DATE]
 
         ChartOfAccountsController().createAccount(payload)
 
-        for key in payload.keys():
-            if key != coa_meta.NAME:
-                payload[key] = ChartOfAccountsPayloadGenerator(is_dates_included=False)\
-                    .model_dump()[key]
+        payload = ChartOfAccountsPayloadGenerator(
+            name=payload[coa_meta.NAME]
+        ).model_dump()
                 
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
@@ -371,8 +355,6 @@ class TestChartOfAccountsCreateAccount:
     def test_create_with_nonexistent_account_mapping(self):
         payload = ChartOfAccountsPayloadGenerator(is_dates_included=False).model_dump()
         payload[coa_meta.ACCOUNT_MAPPING] = ''.join(random.choices(string.digits, k=6))
-        del payload[coa_meta.CREATED_DATE]
-        del payload[coa_meta.UPDATED_DATE]
 
         current_datetime = datetime.now(timezone.utc)
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
