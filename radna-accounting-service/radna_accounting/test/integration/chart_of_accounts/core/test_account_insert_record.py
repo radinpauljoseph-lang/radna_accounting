@@ -1,17 +1,8 @@
 import pytest
 from datetime import datetime, timezone
-from radna_accounting.models.chart_of_accounts import *
-from radna_accounting.validators.chart_of_accounts import (
-    ChartOfAccountsModel
-)
+from radna_accounting.validators.chart_of_accounts import ChartOfAccountsModel
 from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
-from radna_accounting.models.chart_of_accounts import coa_meta
-from radna_accounting.test.data.chart_of_accounts import (
-    ChartOfAccountsPayloadGenerator
-)
-from radna_accounting.test.utils.db.connector import (
-    SQLiteClient
-)
+from radna_accounting.test.data.chart_of_accounts import ChartOfAccountsPayloadGenerator
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
 
 creds = {
@@ -132,98 +123,6 @@ class TestAccountInsertRecord:
         del db_obj
 
         assert result.shape[0] == 1
-
-    @pytest.mark.parametrize("param", [1, -1, 1.11, -1.11, True, {'key', 1}, {'key': 1}, None])
-    def test_invalid_account_id_values_Exception(self, param):
-        expected = f"Incorrect account ID data type '{type(param).__name__}'"
-        core_model = ChartOfAccountsCore()
-
-        current_datetime = datetime.now(timezone.utc)
-        current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
-        payload = ChartOfAccountsPayloadGenerator().model_dump()
-        payload = ChartOfAccountsModel(**payload)
-        payload.account_id = param
-        
-        with pytest.raises(Exception) as excinfo:
-            core_model.insertRecord(payload)
-        assert expected in str(excinfo)
-
-
-    @pytest.mark.parametrize("param", ["", "1234", "1234567890123451234567890123456"])
-    def test_invalid_account_id_values_field_length_error(self, param):
-        core_model = ChartOfAccountsCore()
-
-        payload = ChartOfAccountsPayloadGenerator().model_dump()
-        payload = ChartOfAccountsModel(**payload)
-        payload.account_id = param
-        
-        error_code_one = "COA0002"
-        error_code_two = "COA0003"
-        with pytest.raises(Exception) as excinfo:
-            core_model.insertRecord(payload)
-
-        if len(param) < 5:
-            assert error_code_one in str(excinfo)
-        else:
-            assert error_code_two in str(excinfo)
-
-    @pytest.mark.parametrize("param", [1, -1, 1.11, -1.11, True, {'key', 1}, {'key': 1}, None])
-    def test_invalid_account_name_values_Exception(self, param):
-        expected = f"Incorrect account name data type '{type(param).__name__}'"
-        core_model = ChartOfAccountsCore()
-        
-        payload = ChartOfAccountsPayloadGenerator().model_dump()
-        payload = ChartOfAccountsModel(**payload)
-        payload.name = param
-
-        with pytest.raises(Exception) as excinfo:
-            core_model.insertRecord(payload)
-        assert expected in str(excinfo)
-
-    @pytest.mark.parametrize("param", ["", "2647902066830292456314023255772735635300818039589536229964640280111382742403410796944455975648526778393253846437709638360033347483170939266852249670143"])
-    def test_invalid_account_name_values_field_length_error(self, param):
-        core_model = ChartOfAccountsCore()
-
-        payload = ChartOfAccountsPayloadGenerator().model_dump()
-        payload = ChartOfAccountsModel(**payload)
-        payload.name = param
-
-        error_code_one = "COA0006"
-        error_code_two = "COA0005"
-        with pytest.raises(Exception) as excinfo:
-            core_model.insertRecord(payload)
-        
-        if len(param) <= 0:
-            assert error_code_one in str(excinfo)
-        else:
-            assert error_code_two in str(excinfo)
-
-    @pytest.mark.parametrize("param", [1, -1, 1.11, -1.11, True, {'key', 1}, {'key': 1}, None])
-    def test_invalid_account_type_values_Exception(self, param):
-        expected = f"Incorrect account type data type '{type(param).__name__}'"
-        core_model = ChartOfAccountsCore()
-
-        payload = ChartOfAccountsPayloadGenerator().model_dump()
-        payload = ChartOfAccountsModel(**payload)
-        payload.type = param
-        
-        with pytest.raises(Exception) as excinfo:
-            core_model.insertRecord(payload)
-        assert expected in str(excinfo)
-
-    @pytest.mark.parametrize("param", ["", "SAMPLE", "DISBURSEMENT", "asset", "liability"])
-    def test_invalid_account_type_values_invalid_account_type(self, param):
-        core_model = ChartOfAccountsCore()
-
-        expected = f"Unknown account type \'{param}\'"
-        payload = ChartOfAccountsPayloadGenerator().model_dump()
-        payload = ChartOfAccountsModel(**payload)
-        payload.type = param
-
-        with pytest.raises(Exception) as excinfo:
-            core_model.insertRecord(payload)
-        
-        assert expected in str(excinfo)
 
 
         

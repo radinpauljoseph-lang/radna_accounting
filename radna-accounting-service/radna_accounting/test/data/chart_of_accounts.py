@@ -20,7 +20,7 @@ class ChartOfAccountsPayloadGeneratorMetaData:
 coa_payload_meta = ChartOfAccountsPayloadGeneratorMetaData()
 
 class ChartOfAccountsPayloadGenerator(BaseModel):
-    account_id: Any = Field(default_factory=lambda: ''.join(random.choices(string.digits, k=6)))
+    account_id: Any = Field(default_factory=lambda: ''.join(random.choices(string.digits, k=30)))
     name: Any = Field(default_factory=lambda: fake.bs())
     type: Any = Field(default_factory=lambda: account_types[random.randrange(0, len(account_types))])
     description: Any = Field(default_factory=lambda: fake.bs())
@@ -37,4 +37,11 @@ class ChartOfAccountsPayloadGenerator(BaseModel):
                 values[coa_payload_meta.CREATED_DATE] = current_datetime
                 values[coa_payload_meta.UPDATED_DATE] = current_datetime
         return values
+    
+class ChartOfAccountsUpdatePayloadGenerator(BaseModel):
+    name: Any = None
+    type: Any = None
+    description: Any = None
+    account_mapping: Any = None
+
 
