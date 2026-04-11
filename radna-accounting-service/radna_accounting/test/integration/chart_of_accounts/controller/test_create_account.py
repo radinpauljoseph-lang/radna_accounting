@@ -27,7 +27,6 @@ class TestChartOfAccountsControllerCreateAccount:
             "coa_account_id": payload[coa_meta.ACCOUNT_ID],
             "coa_name": payload[coa_meta.NAME],
             "coa_type": payload[coa_meta.TYPE],
-            "coa_account_mapping": "",
             "coa_created_date": current_datetime,
             "coa_updated_date": current_datetime
         }
@@ -50,13 +49,8 @@ class TestChartOfAccountsControllerCreateAccount:
             AND account_id = :coa_account_id
             AND name = :coa_name
             AND type = :coa_type
-            AND (
-                account_mapping IS NULL
-                OR (
-                    account_mapping IS NOT NULL
-                    AND account_mapping = :coa_account_mapping
-                )
-            )
+            AND account_mapping IS NULL
+            AND description IS NULL
             AND created_date >= :coa_created_date
             AND updated_date >= :coa_updated_date
         """
@@ -84,6 +78,7 @@ class TestChartOfAccountsControllerCreateAccount:
             "coa_account_id": payload[coa_meta.ACCOUNT_ID],
             "coa_name": payload[coa_meta.NAME],
             "coa_type": payload[coa_meta.TYPE],
+            "coa_description": payload[coa_meta.DESCRIPTION],
             "coa_account_mapping": payload[coa_meta.ACCOUNT_MAPPING],
             "coa_created_date": current_datetime,
             "coa_updated_date": current_datetime
@@ -108,13 +103,8 @@ class TestChartOfAccountsControllerCreateAccount:
             AND account_id = :coa_account_id
             AND name = :coa_name
             AND type = :coa_type
-            AND (
-                account_mapping IS NULL
-                OR (
-                    account_mapping IS NOT NULL
-                    AND account_mapping = :coa_account_mapping
-                )
-            )
+            AND description = :coa_description
+            AND account_mapping = :coa_account_mapping
             AND created_date >= :coa_created_date
             AND updated_date >= :coa_updated_date
         """
@@ -137,7 +127,6 @@ class TestChartOfAccountsControllerCreateAccount:
             "coa_name": payload[coa_meta.NAME],
             "coa_type": payload[coa_meta.TYPE],
             "coa_description": payload[coa_meta.DESCRIPTION],
-            "coa_account_mapping": "",
             "coa_created_date": current_datetime,
             "coa_updated_date": current_datetime
         }
@@ -161,13 +150,7 @@ class TestChartOfAccountsControllerCreateAccount:
             AND name = :coa_name
             AND type = :coa_type
             AND description = :coa_description
-            AND (
-                account_mapping IS NULL
-                OR (
-                    account_mapping IS NOT NULL
-                    AND account_mapping = :coa_account_mapping
-                )
-            )
+            AND account_mapping IS NULL
             AND created_date >= :coa_created_date
             AND updated_date >= :coa_updated_date
         """
@@ -191,7 +174,6 @@ class TestChartOfAccountsControllerCreateAccount:
             "coa_account_id": payload[coa_meta.ACCOUNT_ID],
             "coa_name": payload[coa_meta.NAME],
             "coa_type": payload[coa_meta.TYPE],
-            "coa_account_mapping": "",
             "coa_created_date": current_datetime,
             "coa_updated_date": current_datetime
         }
@@ -214,13 +196,7 @@ class TestChartOfAccountsControllerCreateAccount:
             AND account_id = :coa_account_id
             AND name = :coa_name
             AND type = :coa_type
-            AND (
-                account_mapping IS NULL
-                OR (
-                    account_mapping IS NOT NULL
-                    AND account_mapping = :coa_account_mapping
-                )
-            )
+            AND account_mapping IS NULL
             AND created_date >= :coa_created_date
             AND updated_date >= :coa_updated_date
         """
@@ -248,14 +224,13 @@ class TestChartOfAccountsControllerCreateAccount:
             "coa_account_id": payload[coa_meta.ACCOUNT_ID],
             "coa_name": payload[coa_meta.NAME],
             "coa_type": payload[coa_meta.TYPE],
-            "coa_account_mapping": "",
             "coa_created_date": current_datetime,
             "coa_updated_date": current_datetime
         }
 
         output = ChartOfAccountsController().createAccount(payload)
         assert output["status"] == 400
-        assert output["code"] == f"{COA_CODE}0105"
+        assert output["code"] == "COA0105"
         assert output["message"] == f"Account ID \'{payload[coa_meta.ACCOUNT_ID]}\' already exists"
         
         db_obj = SQLiteClient(creds)\
@@ -274,13 +249,7 @@ class TestChartOfAccountsControllerCreateAccount:
             AND account_id = :coa_account_id
             AND name = :coa_name
             AND type = :coa_type
-            AND (
-                account_mapping IS NULL
-                OR (
-                    account_mapping IS NOT NULL
-                    AND account_mapping = :coa_account_mapping
-                )
-            )
+            AND account_mapping IS NULL
             AND created_date >= :coa_created_date
             AND updated_date >= :coa_updated_date
         """
@@ -315,7 +284,7 @@ class TestChartOfAccountsControllerCreateAccount:
 
         output = ChartOfAccountsController().createAccount(payload)
         assert output["status"] == 400
-        assert output["code"] == f"{COA_CODE}0103"
+        assert output["code"] == "COA0103"
         assert output["message"] == f"Account Name \'{payload[coa_meta.NAME]}\' already exists"
         
         db_obj = SQLiteClient(creds)\
@@ -334,13 +303,7 @@ class TestChartOfAccountsControllerCreateAccount:
             AND account_id = :coa_account_id
             AND name = :coa_name
             AND type = :coa_type
-            AND (
-                account_mapping IS NULL
-                OR (
-                    account_mapping IS NOT NULL
-                    AND account_mapping = :coa_account_mapping
-                )
-            )
+            AND account_mapping IS NULL
             AND created_date >= :coa_created_date
             AND updated_date >= :coa_updated_date
         """
@@ -369,7 +332,7 @@ class TestChartOfAccountsControllerCreateAccount:
 
         output = ChartOfAccountsController().createAccount(payload)
         assert output["status"] == 400
-        assert output["code"] == f"{COA_CODE}0104"
+        assert output["code"] == "COA0104"
         assert output["message"] == f"Account Map \'{payload[coa_meta.ACCOUNT_MAPPING]}\' Not Found"
 
         db_obj = SQLiteClient(creds)\

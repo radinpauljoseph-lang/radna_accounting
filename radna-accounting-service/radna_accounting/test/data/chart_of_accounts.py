@@ -20,7 +20,7 @@ class ChartOfAccountsPayloadGeneratorMetaData:
 coa_payload_meta = ChartOfAccountsPayloadGeneratorMetaData()
 
 class ChartOfAccountsPayloadGenerator(BaseModel):
-    account_id: Any = Field(default_factory=lambda: ''.join(random.choices(string.digits, k=6)))
+    account_id: Any = Field(default_factory=lambda: ''.join(random.choices(string.digits, k=30)))
     name: Any = Field(default_factory=lambda: fake.bs())
     type: Any = Field(default_factory=lambda: account_types[random.randrange(0, len(account_types))])
     description: Any = Field(default_factory=lambda: fake.bs())
