@@ -20,5 +20,4 @@ def check_month_year_period_availability(where_clause_values):
         .execute(where_clause_values)
 
     result = db_obj.getData()
-    del db_obj
     return True if result.shape[0] > 0 else False

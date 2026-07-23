@@ -49,14 +49,12 @@ class ChartOfAccountsController:
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                     account_mapping=record.account_mapping
                 )
-                del core_model
                 raise Exception(error)
                     
             core_model.insertRecord(record)
             record = core_model.selectRecordById(record.account_id)
             return_data = record
         else:
-            del core_model
             if account_name_exists:
                 error = copy.deepcopy(error_map.get(f"{COA_CODE}0103"))
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
@@ -71,7 +69,6 @@ class ChartOfAccountsController:
                 raise Exception(error)
             
         loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.CREATE_ACCOUNT} - Done Creating Account")
-        del core_model
         return return_data
     
     @catchAndLog(Exception)
@@ -102,7 +99,6 @@ class ChartOfAccountsController:
                     error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                         key=key
                     )
-                    del core_model
                     raise Exception(error)
                 
             if account_obj[coa_meta.NAME] != record[coa_meta.NAME]:
@@ -112,7 +108,6 @@ class ChartOfAccountsController:
                     error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                         account_name=account_obj[coa_meta.NAME]
                     )
-                    del core_model
                     raise Exception(error)
             
             account_mapping_id_exists = core_model.selectRecordById(record[coa_meta.ACCOUNT_MAPPING])
@@ -121,7 +116,6 @@ class ChartOfAccountsController:
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                     account_mapping=record[coa_meta.ACCOUNT_MAPPING]
                 )
-                del core_model
                 raise Exception(error)
             
             for key in account_obj.keys():
@@ -138,9 +132,7 @@ class ChartOfAccountsController:
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 account_id=id
             )
-            del core_model
             raise Exception(error)
-        del core_model
         return return_data
     
     @catchAndLog(Exception)
@@ -156,10 +148,8 @@ class ChartOfAccountsController:
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 account_id=id
             )
-            del core_model
             raise Exception(error)
         loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.GET_ACCOUNT} - Done Get Account")  
-        del core_model
         return return_data
 
         

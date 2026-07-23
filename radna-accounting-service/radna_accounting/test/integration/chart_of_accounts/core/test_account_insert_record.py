@@ -62,7 +62,6 @@ class TestAccountInsertRecord:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 1
 
@@ -120,7 +119,6 @@ class TestAccountInsertRecord:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 1
 

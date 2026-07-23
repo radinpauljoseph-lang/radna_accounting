@@ -48,10 +48,6 @@ class TestAccountingPeriodsModel:
 
         with pytest.raises(Exception) as excinfo:
             AccountingPeriodsModel(**payload)
-        print("@@@@@@@@@@@@@@")
-        print(payload)
-        print(str(excinfo))
-        print("@@@@@@@@@@@@@@")
         assert expected in str(excinfo)
 
     @pytest.mark.parametrize("param", [0, 1, 999, 10000])

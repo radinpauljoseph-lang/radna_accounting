@@ -81,7 +81,6 @@ def createAccountRequest(request):
         rrn = NO_ID if rrn is None else rrn
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{coa_request_meta.CREATE_ACCOUNT_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
-        del controller
         rrn = NO_ID if rrn is None else rrn
         loggerOutput(rrn=rrn, message=f"{coa_request_meta.CREATE_ACCOUNT_REQUEST} - DONE: {result}")
         if set(result) == set(error_model):
@@ -136,7 +135,6 @@ def getUpdateAccountRequest(request, id: str = None):
     except Exception as e:
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{coa_request_meta.GET_UPDATE_ACCOUNT_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
-        del controller
         loggerOutput(rrn=rrn, message=f"get_update_account_request - DONE: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])

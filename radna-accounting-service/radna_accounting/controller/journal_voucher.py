@@ -59,9 +59,6 @@ class JournalVoucherController:
         
         if len(journal_entries[DATA_KEY]) == 0:
             error = copy.deepcopy(error_map.get(f"{JNV_CODE}{JNE_CODE}0028"))
-            del core_model
-            del je_core_model
-            del coa_core_model
             raise Exception(error)
         
         journal_entries = journal_entries[DATA_KEY]
@@ -73,9 +70,6 @@ class JournalVoucherController:
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                     account_id=entry[je_meta.ACCOUNT_NUMBER]
                 )
-                del core_model
-                del je_core_model
-                del coa_core_model
                 raise Exception(error)
             account_details = account_details[DATA_KEY]
             entry[ACCOUNT_NAME] = account_details[coa_meta.NAME]

@@ -58,7 +58,6 @@ class TestChartOfAccountsControllerCreateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 1
 
@@ -112,7 +111,6 @@ class TestChartOfAccountsControllerCreateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 1
     
@@ -158,7 +156,6 @@ class TestChartOfAccountsControllerCreateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 1
         
@@ -204,7 +201,6 @@ class TestChartOfAccountsControllerCreateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 1
 
@@ -257,7 +253,6 @@ class TestChartOfAccountsControllerCreateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 0
 
@@ -311,7 +306,6 @@ class TestChartOfAccountsControllerCreateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 0
 
@@ -365,6 +359,5 @@ class TestChartOfAccountsControllerCreateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 0

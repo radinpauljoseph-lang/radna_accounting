@@ -82,12 +82,6 @@ class JournalEntryController:
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 account_id=je_obj[je_meta.ACCOUNT_NUMBER]
             )
-            del core_model
-            del coa_core_model
-            del core_model
-            del coa_core_model
-            del ti_core_model
-            del acp_core_model
             raise Exception(error)
             
         journal_entry_exists = core_model.selectRecordById(
@@ -105,10 +99,6 @@ class JournalEntryController:
             )
             if not transaction_id_exists:
                 error = copy.deepcopy(error_map.get(f"{JNE_CODE}0010"))
-                del core_model
-                del coa_core_model
-                del ti_core_model
-                del acp_core_model
                 raise Exception(error)
             
             journal_entries_filtered = core_model.selectRecordByTransactionId(record[je_meta.TRANSACTION_ID])
@@ -126,10 +116,6 @@ class JournalEntryController:
             
             if transaction_id_parts[ti_meta.MONTH] != transaction_date.month or transaction_id_parts[ti_meta.YEAR] != transaction_date.year:
                 error = copy.deepcopy(error_map.get(f"{JNE_CODE}0103"))
-                del core_model
-                del coa_core_model
-                del ti_core_model
-                del acp_core_model
                 raise Exception(error)
             
             accounting_period_data = acp_core_model.selectRecord(
@@ -141,10 +127,6 @@ class JournalEntryController:
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                     transaction_date=f"{transaction_date.year}-{transaction_date.month}-{transaction_date.day}"
                 )
-                del core_model
-                del coa_core_model
-                del ti_core_model
-                del acp_core_model
                 raise Exception(error)
             
             accounting_period_data = accounting_period_data[DATA_KEY]
@@ -167,16 +149,8 @@ class JournalEntryController:
             return_data = record
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0102"))
-            del core_model
-            del coa_core_model
-            del ti_core_model
-            del acp_core_model
             raise Exception(error)
         loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.CREATE_JOURNAL_ENTRY} - Done Creating Journal Entry")
-        del core_model
-        del coa_core_model
-        del ti_core_model
-        del acp_core_model
         return return_data
     
     @catchAndLog(Exception)
@@ -189,10 +163,8 @@ class JournalEntryController:
             return_data = record
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0026"))
-            del core_model
             raise Exception(error)
         loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Done Get Journal Entry Record")  
-        del core_model
         return return_data
 
     @catchAndLog(Exception)
@@ -205,10 +177,8 @@ class JournalEntryController:
             return_data = record
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0028"))
-            del core_model
             raise Exception(error)
         loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Done Get Journal Entry Record By Transaction ID")  
-        del core_model
         return return_data
     
     @catchAndLog(Exception)
@@ -218,7 +188,6 @@ class JournalEntryController:
         loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Start Get Transaction ID Credit & Debit Amount: {transaction_id}")  
         return_data = core_model.getTransactionIdAmount(transaction_id)
         loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Done Get Transaction ID Credit & Debit Amount: {transaction_id}")  
-        del core_model
         return return_data
     
     @catchAndLog(Exception)
@@ -279,7 +248,6 @@ class JournalEntryController:
                 raise Exception(error)
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0106"))
-            del core_model
             raise Exception(error)
         
         return return_data
@@ -307,14 +275,10 @@ class JournalEntryController:
                 error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                     key=key
                 )
-                del core_model
-                del coa_core_model
                 raise Exception(error)
                 
         if not je_id_exists:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0026"))
-            del core_model
-            del coa_core_model
             raise Exception(error)
         
         data = je_id_exists[DATA_KEY]
@@ -325,8 +289,6 @@ class JournalEntryController:
                 id=data[je_meta.ID],
                 status=data[je_meta.STATUS]
             )
-            del core_model
-            del coa_core_model
             raise Exception(error)
         
         temp_obj = copy.deepcopy(obj)
@@ -346,8 +308,6 @@ class JournalEntryController:
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 account_id=je_obj[je_meta.ACCOUNT_NUMBER]
             )
-            del core_model
-            del coa_core_model
             raise Exception(error)
         
         core_model.updateRecordById(id, je_obj)
@@ -356,8 +316,6 @@ class JournalEntryController:
 
         loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.UPDATE_JOURNAL_ENTRY} - Done Updating Journal Entry")
 
-        del core_model
-        del coa_core_model
         return return_data
     
     @catchAndLog(Exception)
@@ -371,7 +329,6 @@ class JournalEntryController:
                 
         if not je_id_exists:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0026"))
-            del core_model
             raise Exception(error)
         
         data = je_id_exists[DATA_KEY]
@@ -381,7 +338,6 @@ class JournalEntryController:
                 id=data[je_meta.ID],
                 status=data[je_meta.STATUS]
             )
-            del core_model
             raise Exception(error)
         
         data[je_meta.STATUS] = je_status.DELETED
@@ -390,7 +346,6 @@ class JournalEntryController:
 
         loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.DELETE_JOURNAL_ENTRY} - Done Delete Journal Entry")
 
-        del core_model
         return return_data
     
     @catchAndLog(Exception)

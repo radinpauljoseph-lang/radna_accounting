@@ -65,8 +65,6 @@ class AccountingPeriodsController:
         )
         if accounting_period_exists:
             error = copy.deepcopy(error_map.get(f"{ACP_CODE}0102"))
-            del core_model
-            del ti_core_model
             raise Exception(error)
         record = copy.deepcopy(acp_obj)
 
@@ -85,8 +83,6 @@ class AccountingPeriodsController:
         return_data = record
 
         loggerOutput(rrn=self.rrn, message=f"{acp_controller_meta.ACCOUNTING_PERIODS_CONTROLLER}.{acp_controller_meta.CREATE_ACCOUNTING_PERIOD} - Done Creating Accounting Period")
-        del core_model
-        del ti_core_model
         return return_data
     
     @catchAndLog(Exception)
@@ -108,14 +104,12 @@ class AccountingPeriodsController:
 
         if data is None:
             error = copy.deepcopy(error_map.get(f"{ACP_CODE}0103"))
-            del core_model
             raise Exception(error)
         
         data = data[DATA_KEY]
 
         if data[acp_meta.STATUS] == acp_status.CLOSED:
             error = copy.deepcopy(error_map.get(f"{ACP_CODE}0101"))
-            del core_model
             raise Exception(error)
         
         journal_entries = je_core_model.selectRecordsByMonthYear(
@@ -141,9 +135,6 @@ class AccountingPeriodsController:
         return_data = record
 
         loggerOutput(rrn=self.rrn, message=f"{acp_controller_meta.ACCOUNTING_PERIODS_CONTROLLER}.{acp_controller_meta.CREATE_ACCOUNTING_PERIOD} - Done Creating Accounting Period")
-        del core_model
-        del je_core_model
-        del ti_core_model
         return return_data
 
                     
