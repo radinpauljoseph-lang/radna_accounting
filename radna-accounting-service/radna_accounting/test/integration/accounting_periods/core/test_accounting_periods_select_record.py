@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from radna_accounting.validators.data_model import DATA_KEY
 from radna_accounting.validators.accounting_periods import AccountingPeriodsModel
 from radna_accounting.models.accounting_periods import (
@@ -23,15 +23,25 @@ class TestAccountingPeriodsSelectRecord:
             "period_month": payload[acp_meta.MONTH],
             "period_year": payload[acp_meta.YEAR]
         }
-        is_available = check_month_year_period_availability(where_clause_values)
 
-        while is_available:
-            payload = AccountingPeriodsPayloadGenerator().model_dump()
-            where_clause_values = {
-                "period_month": payload[acp_meta.MONTH],
-                "period_year": payload[acp_meta.YEAR]
-            }
+        while True:
             is_available = check_month_year_period_availability(where_clause_values)
+            current_datetime = datetime.now()
+            end_datetime = current_datetime + timedelta(seconds=30)
+            if is_available:
+                payload = AccountingPeriodsPayloadGenerator().model_dump()
+                where_clause_values = {
+                    "period_month": payload[acp_meta.MONTH],
+                    "period_year": payload[acp_meta.YEAR]
+                }
+                is_available = check_month_year_period_availability(where_clause_values)
+        
+                if current_datetime >= end_datetime:
+                    raise Exception({
+                        "error": "Failed to generate new Accounting Period Month and Year"
+                    })
+            else:
+                break
 
         payload = AccountingPeriodsModel(**payload)
         payload.status = acp_status.OPEN
@@ -46,21 +56,31 @@ class TestAccountingPeriodsSelectRecord:
         assert data[DATA_KEY][acp_meta.YEAR] == payload.year
         assert data[DATA_KEY][acp_meta.STATUS] == payload.status
 
-    def test_nonexistent_account_period(self):
+    def test_nonexistent_accounting_period(self):
         payload = AccountingPeriodsPayloadGenerator().model_dump()
         where_clause_values = {
             "period_month": payload[acp_meta.MONTH],
             "period_year": payload[acp_meta.YEAR]
         }
-        is_available = check_month_year_period_availability(where_clause_values)
 
-        while is_available:
-            payload = AccountingPeriodsPayloadGenerator().model_dump()
-            where_clause_values = {
-                "period_month": payload[acp_meta.MONTH],
-                "period_year": payload[acp_meta.YEAR]
-            }
+        while True:
             is_available = check_month_year_period_availability(where_clause_values)
+            current_datetime = datetime.now()
+            end_datetime = current_datetime + timedelta(seconds=30)
+            if is_available:
+                payload = AccountingPeriodsPayloadGenerator().model_dump()
+                where_clause_values = {
+                    "period_month": payload[acp_meta.MONTH],
+                    "period_year": payload[acp_meta.YEAR]
+                }
+                is_available = check_month_year_period_availability(where_clause_values)
+        
+                if current_datetime >= end_datetime:
+                    raise Exception({
+                        "error": "Failed to generate new Accounting Period Month and Year"
+                    })
+            else:
+                break
 
         payload = AccountingPeriodsModel(**payload)
         data = AccountingPeriodsCore().selectRecord(
