@@ -92,7 +92,6 @@ def createAccountingPeriodRequest(request):
             error_msg = err.args[0]
         result = error_msg
     finally:
-        del controller
         rrn = NO_ID if rrn is None else rrn
         loggerOutput(rrn=rrn, message=f"{je_request_meta.CREATING_ACCOUNTING_PERIOD_REQUEST} - DONE: {result}")
         if set(result) == set(error_model):
@@ -151,7 +150,6 @@ def closeAccountingPeriodRequest(request):
             error_msg = err.args[0]
         result = error_msg
     finally:
-        del controller
         rrn = NO_ID if rrn is None else rrn
         loggerOutput(rrn=rrn, message=f"{je_request_meta.CREATING_ACCOUNTING_PERIOD_REQUEST} - DONE: {result}")
         if set(result) == set(error_model):

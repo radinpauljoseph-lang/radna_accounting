@@ -106,7 +106,6 @@ def createJournalEntryRequest(request):
             error_msg = err.args[0]
         result = error_msg
     finally:
-        del controller
         rrn = NO_ID if rrn is None else rrn
         loggerOutput(rrn=rrn, message=f"{je_request_meta.CREATE_JOURNAL_ENTRY_REQUEST} - DONE: {result}")
         if set(result) == set(error_model):
@@ -167,7 +166,6 @@ def getUpdateJournalEntryRequest(request, id: str = None):
     except Exception as e:
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_UPDATE_JOURNAL_ENTRY_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
-        del controller
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_UPDATE_JOURNAL_ENTRY_REQUEST} - Done: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
@@ -221,7 +219,6 @@ def getJournalEntryByTransactionIdRequest(request, transaction_id: str = None):
     except Exception as e:
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_UPDATE_JOURNAL_ENTRY_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
-        del controller
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_UPDATE_JOURNAL_ENTRY_REQUEST} - Done: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
@@ -268,7 +265,6 @@ def getTransactionIdCreditDebitAmountRequest(request, id: str = None):
     except Exception as e:
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_TRANSACTION_ID_CREDIT_DEBIT_AMOUNT_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
-        del controller
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.GET_TRANSACTION_ID_CREDIT_DEBIT_AMOUNT_REQUEST} - Done: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
@@ -324,7 +320,6 @@ def setTransactionIdForReviewRequest(request, id: str = None):
     except Exception as e:
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.SET_TRANSACTION_ID_FOR_REVIEW_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
-        del controller
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.SET_TRANSACTION_ID_FOR_REVIEW_REQUEST} - Done: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
@@ -372,7 +367,6 @@ def approveJournalEntriesByTransactionIdRequest(request, id: str = None):
     except Exception as e:
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.APPROVE_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
-        del controller
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.APPROVE_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Done: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
@@ -420,7 +414,6 @@ def rejectJournalEntriesByTransactionIdRequest(request, id: str = None):
     except Exception as e:
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.REJECT_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
-        del controller
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.REJECT_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Done: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])
@@ -468,7 +461,6 @@ def postJournalEntriesByTransactionIdRequest(request, id: str = None):
     except Exception as e:
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.POST_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Caught something: {type(e).__name__} -> {e}")
     finally:
-        del controller
         loggerOutput(rrn=rrn, method=logger_types.ERROR, message=f"{je_request_meta.POST_JOURNAL_ENTRIES_BY_TRANSACTION_ID_REQUEST} - Done: {result}")
         if set(result) == set(error_model):
             return JsonResponse(result, status=result[STATUS_KEY])

@@ -84,7 +84,6 @@ class TestChartOfAccountsControllerUpdateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 1
         assert result[param].iloc[0] == payload[param]
@@ -138,7 +137,6 @@ class TestChartOfAccountsControllerUpdateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 0
 
@@ -182,7 +180,6 @@ class TestChartOfAccountsControllerUpdateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 1
 
@@ -222,7 +219,6 @@ class TestChartOfAccountsControllerUpdateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 1
 
@@ -272,7 +268,6 @@ class TestChartOfAccountsControllerUpdateAccount:
         .execute(where_clause_values)
 
         result = db_obj.getData()
-        del db_obj
 
         assert result.shape[0] == 1
 

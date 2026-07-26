@@ -1,27 +1,28 @@
 import copy
 import re
 from datetime import datetime
-from ...configs.config  import (
+from radna_accounting.configs.config  import (
     logger_types,
     loggerOutput
 )
-from ...configs.config import engine
-from ...configs.response_codes.mapping import (
+
+from radna_accounting.configs.config import engine
+from radna_accounting.configs.response_codes.mapping import (
     ACP_CODE,
     MESSAGE_KEY,
     error_map
 )
-from ...models.accounting_periods import (
+from radna_accounting.models.accounting_periods import (
     acp_meta,
     acp_status,
     accounting_periods,
     accounting_periods_history
 )
-from ...validators.accounting_periods import (
+from radna_accounting.validators.accounting_periods import (
     AccountingPeriodsModel,
     AccountingPeriodsHistoryModel
 )
-from ...validators.data_model import (
+from radna_accounting.validators.data_model import (
     DATA_KEY,
     DataModel
 )
@@ -31,6 +32,7 @@ class AccountingPeriodsCoreMetaData:
         self.ACCOUNTING_PERIODS_CORE = "AccountingPeriodsCore"
         self.INSERT_RECORD = "insertRecord"
         self.SELECT_RECORD = "selectRecord"
+        self.CLOSE_ACCOUNTING_PERIOD = "closeAccountingPeriod"
 
 acp_core_meta = AccountingPeriodsCoreMetaData()
 
@@ -41,27 +43,38 @@ class AccountingPeriodsCore:
         self.engine = engine
         self.rrn = rrn
 
-    def insertRecord(self, obj: dict) -> None:
+    def insertRecord(self, obj: AccountingPeriodsModel) -> None:
         new_record = None
+
+        self.dto_model(**obj.model_dump())
 
         loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.ACCOUNTING_PERIODS_CORE}.{acp_core_meta.INSERT_RECORD} - Start Insert Accounting Period Record {obj}")
 
+        accounting_period_exists = self.selectRecord(
+            month=obj.month,
+            year=obj.year
+        )
+        if accounting_period_exists:
+            error = copy.deepcopy(error_map.get(f"{ACP_CODE}0102"))
+            raise Exception(error)
+        
         with self.engine.connect() as conn:
-            new_record = self.dto_model(**obj).model_dump()
-            new_record[acp_meta.CREATED_DATE] = datetime.now()
-            new_record[acp_meta.UPDATED_DATE] = new_record[acp_meta.CREATED_DATE]
+            new_record = copy.deepcopy(obj)
+            new_record.created_date = datetime.now()
+            new_record.updated_date = new_record.created_date
 
-            history_record = copy.deepcopy(new_record)
+            history_record = copy.deepcopy(new_record.model_dump())
             history_record[acp_meta.HISTORY_OPERATION] = "I"
-            history_record = self.history_model(**history_record).model_dump()
+            history_record = self.history_model(**history_record)
 
             insert_statement = accounting_periods\
                 .insert()\
-                .values(**new_record)
+                .values(**new_record.model_dump())
             
             history_insert_statement = accounting_periods_history\
                 .insert()\
-                .values(**history_record)
+                .values(**history_record.model_dump())
+            
             conn.execute(insert_statement)
             conn.execute(history_insert_statement)
             conn.commit()
@@ -96,7 +109,7 @@ class AccountingPeriodsCore:
         return result
     
     def closeAccountingPeriod(self, month: int, year: int) -> None:
-        ## loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.ACCOUNTING_PERIODS_CORE}.{acp_core_meta.UPDATE_RECORD_BY_ID} - Start Update Accounting Period Record: month = {month}, year = {year}")
+        loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.ACCOUNTING_PERIODS_CORE}.{acp_core_meta.CLOSE_ACCOUNTING_PERIOD} - Start Close Accounting Period Record")
         record = self.selectRecord(
             month=month,
             year=year
@@ -132,9 +145,8 @@ class AccountingPeriodsCore:
                 conn.execute(update_statement)
                 conn.execute(history_insert_statement)
                 conn.commit()
-                # loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.ACCOUNTING_PERIODS_CORE}.{acp_core_meta.UPDATE_RECORD_BY_ID} - Done Update Journal Entry Record: {id}")
+                loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.ACCOUNTING_PERIODS_CORE}.{acp_core_meta.CLOSE_ACCOUNTING_PERIOD} - Done Close Accounting Period Record")
         else:
-            # loggerOutput(rrn=self.rrn, message=f"{acp_core_meta.ACCOUNTING_PERIODS_CORE}.{acp_core_meta.UPDATE_RECORD_BY_ID} - Journal Entry Record Not Found: {id}")
             error = copy.deepcopy(error_map.get(f"{ACP_CODE}0101"))
             raise Exception(error)
     

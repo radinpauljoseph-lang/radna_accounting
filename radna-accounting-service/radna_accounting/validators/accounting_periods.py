@@ -35,7 +35,7 @@ class AccountingPeriodsModel(BaseModel):
     @model_validator(mode="before")
     def month_validator(cls, values):
         month = values[acp_meta.MONTH]
-        if not isinstance(month, int):
+        if not isinstance(month, int) or isinstance(month, bool):
             error = copy.deepcopy(error_map.get(f"{ACP_CODE}0001"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 variable_type=type(month).__name__
@@ -49,7 +49,7 @@ class AccountingPeriodsModel(BaseModel):
     @model_validator(mode="before")
     def year_validator(cls, values):
         year = values[acp_meta.YEAR]
-        if not isinstance(year, int):
+        if not isinstance(year, int) or isinstance(year, bool):
             error = copy.deepcopy(error_map.get(f"{ACP_CODE}0003"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 variable_type=type(year).__name__
@@ -65,14 +65,39 @@ class AccountingPeriodsModel(BaseModel):
         year = int(values[acp_meta.YEAR]) if isinstance(values[acp_meta.YEAR], str) else values[acp_meta.YEAR]
         month = int(values[acp_meta.MONTH]) if isinstance(values[acp_meta.MONTH], str) else values[acp_meta.MONTH]
         current_date = datetime.now()
+
+        if not isinstance(year, int) or isinstance(year, bool):
+            error = copy.deepcopy(error_map.get(f"{ACP_CODE}0003"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                variable_type=type(year).__name__
+            )
+            raise Exception(error)
+        if int(year) < 1000  or int(year) > 9999:
+          error = copy.deepcopy(error_map.get(f"{ACP_CODE}0004"))
+          raise Exception(error)
+        
         if year > current_date.year:
           error = copy.deepcopy(error_map.get(f"{ACP_CODE}0005"))
           raise Exception(error)
+        
+        if not isinstance(month, int) or isinstance(month, bool):
+            error = copy.deepcopy(error_map.get(f"{ACP_CODE}0001"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                variable_type=type(month).__name__
+            )
+            raise Exception(error)
+        if int(month) < 1  or int(month) > 12:
+          error = copy.deepcopy(error_map.get(f"{ACP_CODE}0002"))
+          raise Exception(error)
+        
         else:
-             if year == current_date.year:
-                  if month > current_date.month:
+            if year == current_date.year:
+                if month > current_date.month:
                     error = copy.deepcopy(error_map.get(f"{ACP_CODE}0005"))
-                    raise Exception(error)
+                    raise Exception(error)  
+            if year > current_date.year:
+                error = copy.deepcopy(error_map.get(f"{ACP_CODE}0005"))
+                raise Exception(error)
         return values
     
     @model_validator(mode="before")
@@ -93,7 +118,6 @@ class AccountingPeriodsModel(BaseModel):
                 raise Exception(error)
         return values
     
-
     @model_validator(mode="before")
     def created_date_converter(cls, values):
         if acp_meta.CREATED_DATE in values.keys():

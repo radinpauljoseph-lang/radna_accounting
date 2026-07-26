@@ -95,7 +95,6 @@ def downloadJournalVoucherFileRequest(request, id: str):
             error_msg = err.args[0]
         result = error_msg
     finally:
-        del controller
         rrn = NO_ID if rrn is None else rrn
         loggerOutput(rrn=rrn, message=f"{jv_request_meta.DOWNLOAD_JOURNAL_VOUCHER_REQUEST} - DONE: {result}")
         if set(result) == set(error_model):
