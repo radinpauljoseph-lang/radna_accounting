@@ -1,7 +1,7 @@
 import copy
 import re
 from datetime import datetime
-from ...configs.config  import (
+from radna_accounting.configs.config  import (
     logger_types,
     loggerOutput
 )

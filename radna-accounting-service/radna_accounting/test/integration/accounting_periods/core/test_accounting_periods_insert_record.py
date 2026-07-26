@@ -18,22 +18,14 @@ class TestAccountingPeriodsInsertRecord:
 
     def test_happy_path(self):
         payload = AccountingPeriodsPayloadGenerator().model_dump()
-        where_clause_values = {
-            "period_month": payload[acp_meta.MONTH],
-            "period_year": payload[acp_meta.YEAR]
-        }
 
         while True:
-            is_available = check_month_year_period_availability(where_clause_values)
+            is_available = check_month_year_period_availability(month=payload[acp_meta.MONTH], year=payload[acp_meta.YEAR])
             current_datetime = datetime.now()
             end_datetime = current_datetime + timedelta(seconds=30)
             if is_available:
                 payload = AccountingPeriodsPayloadGenerator().model_dump()
-                where_clause_values = {
-                    "period_month": payload[acp_meta.MONTH],
-                    "period_year": payload[acp_meta.YEAR]
-                }
-                is_available = check_month_year_period_availability(where_clause_values)
+                is_available = check_month_year_period_availability(month=payload[acp_meta.MONTH], year=payload[acp_meta.YEAR])
 
                 if current_datetime >= end_datetime:
                     raise Exception({
@@ -76,22 +68,14 @@ class TestAccountingPeriodsInsertRecord:
     def test_accounting_period_exists_error(self):
         expected = "ACP0102"
         payload = AccountingPeriodsPayloadGenerator().model_dump()
-        where_clause_values = {
-            "period_month": payload[acp_meta.MONTH],
-            "period_year": payload[acp_meta.YEAR]
-        }
 
         while True:
-            is_available = check_month_year_period_availability(where_clause_values)
+            is_available = check_month_year_period_availability(month=payload[acp_meta.MONTH], year=payload[acp_meta.YEAR])
             current_datetime = datetime.now()
             end_datetime = current_datetime + timedelta(seconds=30)
             if is_available:
                 payload = AccountingPeriodsPayloadGenerator().model_dump()
-                where_clause_values = {
-                    "period_month": payload[acp_meta.MONTH],
-                    "period_year": payload[acp_meta.YEAR]
-                }
-                is_available = check_month_year_period_availability(where_clause_values)
+                is_available = check_month_year_period_availability(month=payload[acp_meta.MONTH], year=payload[acp_meta.YEAR])
         
                 if current_datetime >= end_datetime:
                     raise Exception({

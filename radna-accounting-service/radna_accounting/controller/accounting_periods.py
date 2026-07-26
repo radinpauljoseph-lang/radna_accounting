@@ -11,17 +11,17 @@ from ..configs.response_codes.mapping import (
     MESSAGE_KEY,
     error_map
 )
-from ..core.accounting_periods.accounting_periods import AccountingPeriodsCore
-from ..core.journal_entry.journal_entry import JournalEntryCore
-from ..core.transaction_ids.transaction_ids import TransactionIdsCore
-from ..validators.accounting_periods import AccountingPeriodsModel
-from ..validators.transaction_ids import TransactionIdsModel
-from ..validators.data_model import DATA_KEY
-from ..models.accounting_periods import (
+from radna_accounting.core.accounting_periods.accounting_periods import AccountingPeriodsCore
+from radna_accounting.core.journal_entry.journal_entry import JournalEntryCore
+from radna_accounting.core.transaction_ids.transaction_ids import TransactionIdsCore
+from radna_accounting.validators.accounting_periods import AccountingPeriodsModel
+from radna_accounting.validators.transaction_ids import TransactionIdsModel
+from radna_accounting.validators.data_model import DATA_KEY
+from radna_accounting.models.accounting_periods import (
     acp_meta,
     acp_status
 )
-from ..models.journal_entry import (
+from radna_accounting.models.journal_entry import (
     je_meta,
     je_status
 )
@@ -40,7 +40,6 @@ acp_controller_meta = AccountingPeriodsControllerMetaData()
 class AccountingPeriodsController:
     def __init__(self, rrn = None):
         self.validator_model = AccountingPeriodsModel
-        self.engine = engine
         self.core_model = AccountingPeriodsCore
         self.je_core_model = JournalEntryCore
         self.ti_core_model = TransactionIdsCore
@@ -95,7 +94,6 @@ class AccountingPeriodsController:
         ).model_dump()
         core_model = self.core_model(rrn=self.rrn)
         je_core_model = self.je_core_model(rrn=self.rrn)
-        ti_core_model = self.ti_core_model(rrn=self.rrn)
 
         data = core_model.selectRecord(
             month=acp_obj[acp_meta.MONTH],

@@ -4,7 +4,11 @@ creds = {
     "database": "temp_state.db"
 }
 
-def check_month_year_period_availability(where_clause_values):
+def check_month_year_period_availability(month: int, year: int):
+    where_clause_values = {
+        "period_month": month,
+        "period_year": year
+    }
     db_obj = SQLiteClient(creds)\
         .connect(creds)\
         .setCommand(f"""
