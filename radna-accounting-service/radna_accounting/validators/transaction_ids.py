@@ -10,7 +10,7 @@ from ..configs.response_codes.mapping import (
      error_map
 )
 
-model_name = "TransactionIdsModel"
+FIRST_ID = "00001"
 
 class TransactionIdsModel(BaseModel):
     month: int | None = None
@@ -20,44 +20,79 @@ class TransactionIdsModel(BaseModel):
     @model_validator(mode="before")
     def month_validator(cls, values):
         month = values[ti_meta.MONTH]
-        if not isinstance(month, int):
+        if not isinstance(month, int)  or isinstance(month, bool):
             error = copy.deepcopy(error_map.get(f"{TIS_CODE}0001"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 variable_type=type(month).__name__
             )
             raise Exception(error)
-        if int(month) < 1  or int(month) > 12:
-          error = copy.deepcopy(error_map.get(f"{TIS_CODE}0002"))
-          raise Exception(error)
+        else:
+            if int(month) < 1  or int(month) > 12:
+                error = copy.deepcopy(error_map.get(f"{TIS_CODE}0002"))
+                raise Exception(error)
         return values
     
     @model_validator(mode="before")
     def year_validator(cls, values):
         year = values[ti_meta.YEAR]
-        if not isinstance(year, int):
+        if not isinstance(year, int) or isinstance(year, bool):
             error = copy.deepcopy(error_map.get(f"{TIS_CODE}0003"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
                 variable_type=type(year).__name__
             )
             raise Exception(error)
-        if int(year) < 1000  or int(year) > 9999:
-          error = copy.deepcopy(error_map.get(f"{TIS_CODE}0004"))
-          raise Exception(error)
+        else:
+            if int(year) < 1000  or int(year) > 9999:
+                error = copy.deepcopy(error_map.get(f"{TIS_CODE}0004"))
+                raise Exception(error)
         return values
     
     @model_validator(mode="before")
     def month_year_validator(cls, values):
-        year = int(values[ti_meta.YEAR]) if isinstance(values[ti_meta.YEAR], str) else values[ti_meta.YEAR]
-        month = int(values[ti_meta.MONTH]) if isinstance(values[ti_meta.MONTH], str) else values[ti_meta.MONTH]
+        year = values[ti_meta.YEAR]
+        month = values[ti_meta.MONTH]
         current_date = datetime.now()
-        if year > current_date.year:
-          error = copy.deepcopy(error_map.get(f"{TIS_CODE}0005"))
-          raise Exception(error)
+
+        if not isinstance(month, int)  or isinstance(month, bool):
+            error = copy.deepcopy(error_map.get(f"{TIS_CODE}0001"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                variable_type=type(month).__name__
+            )
+            raise Exception(error)
         else:
-             if year == current_date.year:
-                  if month > current_date.month:
-                    error = copy.deepcopy(error_map.get(f"{TIS_CODE}0005"))
-                    raise Exception(error)
+            if int(month) < 1  or int(month) > 12:
+                error = copy.deepcopy(error_map.get(f"{TIS_CODE}0002"))
+                raise Exception(error)
+
+        if not isinstance(year, int) or isinstance(year, bool):
+            error = copy.deepcopy(error_map.get(f"{TIS_CODE}0003"))
+            error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                variable_type=type(year).__name__
+            )
+            raise Exception(error)
+        else:
+            if int(year) < 1000  or int(year) > 9999:
+                error = copy.deepcopy(error_map.get(f"{TIS_CODE}0004"))
+                raise Exception(error)
+            
+            if year > current_date.year:
+                error = copy.deepcopy(error_map.get(f"{TIS_CODE}0005"))
+                raise Exception(error)
+            if not isinstance(year, int) or isinstance(year, bool):
+                error = copy.deepcopy(error_map.get(f"{TIS_CODE}0003"))
+                error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
+                    variable_type=type(year).__name__
+                )
+                raise Exception(error)
+            if int(year) < 1000  or int(year) > 9999:
+                error = copy.deepcopy(error_map.get(f"{TIS_CODE}0004"))
+                raise Exception(error)
+        
+            else:
+                if year == current_date.year:
+                    if month > current_date.month:
+                        error = copy.deepcopy(error_map.get(f"{TIS_CODE}0005"))
+                        raise Exception(error)
         return values
     
     @model_validator(mode="before")
@@ -75,7 +110,7 @@ class TransactionIdsModel(BaseModel):
                id_length=ti_meta.ID_LENGTH
           )
           raise Exception(error)
-         if not re.search("^\d{5}\Z", id):
+         if not re.search(r"^\d{5}\Z", id):
               error = copy.deepcopy(error_map.get(f"{TIS_CODE}0008"))
               raise Exception(error)
          return values

@@ -15,7 +15,10 @@ from radna_accounting.core.accounting_periods.accounting_periods import Accounti
 from radna_accounting.core.journal_entry.journal_entry import JournalEntryCore
 from radna_accounting.core.transaction_ids.transaction_ids import TransactionIdsCore
 from radna_accounting.validators.accounting_periods import AccountingPeriodsModel
-from radna_accounting.validators.transaction_ids import TransactionIdsModel
+from radna_accounting.validators.transaction_ids import (
+    TransactionIdsModel,
+    FIRST_ID
+)
 from radna_accounting.validators.data_model import DATA_KEY
 from radna_accounting.models.accounting_periods import (
     acp_meta,
@@ -26,8 +29,6 @@ from radna_accounting.models.journal_entry import (
     je_status
 )
 from ..models.transaction_ids import ti_meta
-
-FIRST_ID = "00001"
 
 class AccountingPeriodsControllerMetaData:
     def __init__(self):

@@ -17,7 +17,7 @@ class TestAccountingPeriodsModel:
 
         assert isinstance(payload, AccountingPeriodsModel) is True
 
-    @pytest.mark.parametrize("param", [1.11, -1.11, True, {'key', 1}, {'key': 1}, None])
+    @pytest.mark.parametrize("param", [1.11, -1.11, True, {'key', 1}, (1, 2), [1, 2], None])
     def test_month_invalid_data_type(self, param):
         expected = "ACP0001"
         payload = AccountingPeriodsPayloadGenerator(
@@ -39,7 +39,7 @@ class TestAccountingPeriodsModel:
             AccountingPeriodsModel(**payload)
         assert expected in str(excinfo)
 
-    @pytest.mark.parametrize("param", [1.11, -1.11, True, {'key', 1}, {'key': 1}, None])
+    @pytest.mark.parametrize("param", [1.11, -1.11, True, {'key', 1}, (1, 2), [1, 2], None])
     def test_year_invalid_data_type(self, param):
         expected = "ACP0003"
         payload = AccountingPeriodsPayloadGenerator(
