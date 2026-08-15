@@ -1,27 +1,25 @@
 import copy
 import re
 from sqlalchemy import cast, Integer, desc
-from ...configs.config  import (
+from radna_accounting.configs.config  import (
     logger_types,
     loggerOutput
 )
-from ...configs.config import engine
-from ...configs.response_codes.mapping import (
+from radna_accounting.configs.config import engine
+from radna_accounting.configs.response_codes.mapping import (
     TIS_CODE,
     MESSAGE_KEY,
     error_map
 )
-from ...models.transaction_ids import (
+from radna_accounting.models.transaction_ids import (
     ti_meta,
     transaction_ids
 )
-from ...validators.transaction_ids import TransactionIdsModel
-from ...validators.data_model import (
+from radna_accounting.validators.transaction_ids import TransactionIdsModel
+from radna_accounting.validators.data_model import (
     DATA_KEY,
     DataModel
 )
-
-from sqlalchemy import extract
 
 class TransactionIdsCoreMetaData:
     def __init__(self):
@@ -43,6 +41,8 @@ class TransactionIdsCore:
     def insertRecord(self, obj: dict) -> None:
         new_record = None
 
+        self.dto_model(**obj)
+
         loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.INSERT_RECORD} - Start Insert Transaction ID Record {obj}")
 
         with self.engine.connect() as conn:
@@ -56,46 +56,6 @@ class TransactionIdsCore:
         
         loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.INSERT_RECORD} - Done Insert Transaction ID Record {obj}")
     
-    ## Refactor: get latest transaction ID
-    # def selectIdsByMonthYear(self, month: int, year: int) -> dict:
-    #     validator = None
-    #     result = None
-
-    #     loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.INSERT_RECORD} - Done Select Transaction IDs By Month & Year")
-    #     if not isinstance(month, int):
-    #         error = copy.deepcopy(error_map.get(f"{TIS_CODE}0001"))
-    #         error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-    #             variable_type=type(month).__name__
-    #         )
-    #         raise Exception(error)
-    #     if int(month) < 1  or int(month) > 12:
-    #       error = copy.deepcopy(error_map.get(f"{TIS_CODE}0002"))
-    #       raise Exception(error)
-        
-    #     if not isinstance(year, int):
-    #         error = copy.deepcopy(error_map.get(f"{TIS_CODE}0003"))
-    #         error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
-    #             variable_type=type(year).__name__
-    #         )
-    #         raise Exception(error)
-    #     if int(year) < 1000  or int(year) > 9999:
-    #       error = copy.deepcopy(error_map.get(f"{TIS_CODE}0004"))
-    #       raise Exception(error)
-        
-    #     with self.engine.connect() as conn:
-    #         validator = transaction_ids\
-    #             .select()\
-    #             .where(
-    #                 (transaction_ids.c.month == month) &
-    #                 (transaction_ids.c.year == year)
-    #             )
-    #         result = conn.execute(validator).fetchall()
-
-    #     result = [dict(row._mapping) for row in result]
-    #     result = pd.DataFrame(result)
-    #     loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.INSERT_RECORD} - Done Select Transaction IDs By Month & Year")
-    #     return result
-    
     def selectRecord(self, month: int, year: int, id: str) -> dict:
         validator = None
         result = None
@@ -107,6 +67,7 @@ class TransactionIdsCore:
             year=year,
             id=id
         ).model_dump()
+        
         with self.engine.connect() as conn:
             validator = transaction_ids\
                 .select()\

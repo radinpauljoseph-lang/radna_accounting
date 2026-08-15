@@ -1,4 +1,4 @@
-from ...configs.config import (
+from radna_accounting.configs.config import (
     logger_types,
     loggerOutput
 )

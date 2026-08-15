@@ -8,13 +8,13 @@ from xhtml2pdf import pisa
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 
-from ..configs.config import (
+from radna_accounting.configs.config import (
     logger_types,
     loggerOutput,
     NO_ID
 )
-from ..configs.response_codes.error_model import ErrorModel
-from ..configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.error_model import ErrorModel
+from radna_accounting.configs.response_codes.mapping import (
     WEB_CODE,
     SYS_CODE,
     JNE_CODE,
@@ -24,8 +24,8 @@ from ..configs.response_codes.mapping import (
     error_map
 )
 
-from ..controller.journal_entry import JournalEntryController
-from ..controller.journal_voucher import JournalVoucherController
+from radna_accounting.controller.journal_entry import JournalEntryController
+from radna_accounting.controller.journal_voucher import JournalVoucherController
 from .request_details.constants import (
     UTF_8,
     REQUEST_REFERENCE_NUMBER,
@@ -37,8 +37,8 @@ from .request_details.constants import (
     CREATED_RESPONSE_CODE
 )
 from .request_details.request_validators import checkRequiredValidators
-from ..validators.data_model import DATA_KEY
-from ..validators.journal_voucher import JournalVoucherDocumentDataModel
+from radna_accounting.validators.data_model import DATA_KEY
+from radna_accounting.validators.journal_voucher import JournalVoucherDocumentDataModel
 
 class JournalEntryRequestMetaData:
     def __init__(self):

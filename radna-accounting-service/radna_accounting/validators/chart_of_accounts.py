@@ -2,11 +2,11 @@ import copy
 from datetime import datetime
 from pydantic import BaseModel, model_validator
 
-from ..models.chart_of_accounts import (
+from radna_accounting.models.chart_of_accounts import (
     coa_meta,
     coa_types
 )
-from ..configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.mapping import (
     COA_CODE,
     MESSAGE_KEY,
     error_map

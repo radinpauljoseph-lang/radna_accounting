@@ -1,12 +1,12 @@
 import copy
 
-from ..utils.decorators.error_handling import catchAndLog
-from ..configs.config import (
+from radna_accounting.utils.decorators.error_handling import catchAndLog
+from radna_accounting.configs.config import (
     logger_types,
     loggerOutput,
     engine
 )
-from ..configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.mapping import (
     ACP_CODE,
     MESSAGE_KEY,
     error_map
@@ -15,7 +15,10 @@ from radna_accounting.core.accounting_periods.accounting_periods import Accounti
 from radna_accounting.core.journal_entry.journal_entry import JournalEntryCore
 from radna_accounting.core.transaction_ids.transaction_ids import TransactionIdsCore
 from radna_accounting.validators.accounting_periods import AccountingPeriodsModel
-from radna_accounting.validators.transaction_ids import TransactionIdsModel
+from radna_accounting.validators.transaction_ids import (
+    TransactionIdsModel,
+    FIRST_ID
+)
 from radna_accounting.validators.data_model import DATA_KEY
 from radna_accounting.models.accounting_periods import (
     acp_meta,
@@ -25,9 +28,7 @@ from radna_accounting.models.journal_entry import (
     je_meta,
     je_status
 )
-from ..models.transaction_ids import ti_meta
-
-FIRST_ID = "00001"
+from radna_accounting.models.transaction_ids import ti_meta
 
 class AccountingPeriodsControllerMetaData:
     def __init__(self):
@@ -53,14 +54,13 @@ class AccountingPeriodsController:
         acp_obj[acp_meta.STATUS] = acp_status.OPEN
 
         acp_obj = self.validator_model(**acp_obj)
-        acp_obj = acp_obj.model_dump()
 
         core_model = self.core_model(self.rrn)
         ti_core_model = self.ti_core_model(self.rrn)
             
         accounting_period_exists = core_model.selectRecord(
-            month=acp_obj[acp_meta.MONTH],
-            year=acp_obj[acp_meta.YEAR]
+            month=acp_obj.month,
+            year=acp_obj.year
         )
         if accounting_period_exists:
             error = copy.deepcopy(error_map.get(f"{ACP_CODE}0102"))
@@ -68,16 +68,16 @@ class AccountingPeriodsController:
         record = copy.deepcopy(acp_obj)
 
         core_model.insertRecord(record)
-        record = core_model.selectRecord(
-            month=acp_obj[acp_meta.MONTH],
-            year=acp_obj[acp_meta.YEAR]
-        )
         ti_core_model.insertRecord(
             TransactionIdsModel(
-                month=acp_obj[acp_meta.MONTH],
-                year=acp_obj[acp_meta.YEAR],
+                month=acp_obj.month,
+                year=acp_obj.year,
                 id=FIRST_ID
             ).model_dump()
+        )
+        record = core_model.selectRecord(
+            month=acp_obj.month,
+            year=acp_obj.year
         )
         return_data = record
 
@@ -114,13 +114,12 @@ class AccountingPeriodsController:
             month=data[acp_meta.MONTH],
             year=data[acp_meta.YEAR]
         )
-
-        if DATA_KEY in journal_entries.keys():
-            journal_entries = journal_entries[DATA_KEY]
-            for entry in journal_entries:
-                if entry[je_meta.STATUS] != je_status.POSTED:
-                    error = copy.deepcopy(error_map.get(f"{ACP_CODE}0104"))
-                    raise Exception(error)
+        
+        journal_entries = journal_entries[DATA_KEY]
+        for entry in journal_entries:
+            if entry[je_meta.STATUS] != je_status.POSTED:
+                error = copy.deepcopy(error_map.get(f"{ACP_CODE}0104"))
+                raise Exception(error)
                     
         core_model.closeAccountingPeriod(
             month=acp_obj[acp_meta.MONTH],

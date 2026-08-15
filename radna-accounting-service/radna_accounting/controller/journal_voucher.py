@@ -1,14 +1,14 @@
 import copy
 from datetime import datetime
 from django.http import HttpResponse
-from ..utils.decorators.error_handling import catchAndLog
-from ..configs.config import (
+from radna_accounting.utils.decorators.error_handling import catchAndLog
+from radna_accounting.configs.config import (
     logger_types,
     loggerOutput,
     engine
 )
-from ..models.journal_entry import je_types
-from ..configs.response_codes.mapping import (
+from radna_accounting.models.journal_entry import je_types
+from radna_accounting.configs.response_codes.mapping import (
     COA_CODE,
     JNE_CODE,
     JNV_CODE,
@@ -16,18 +16,18 @@ from ..configs.response_codes.mapping import (
     DETAILS_KEY,
     error_map
 )
-from ..models.chart_of_accounts import coa_meta
-from ..models.journal_voucher import jv_meta
-from ..models.journal_entry import je_meta
-from ..core.journal_voucher.journal_voucher import JournalVoucherCore
-from ..core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
-from ..core.journal_entry.journal_entry import JournalEntryCore
-from ..validators.journal_voucher import (
+from radna_accounting.models.chart_of_accounts import coa_meta
+from radna_accounting.models.journal_voucher import jv_meta
+from radna_accounting.models.journal_entry import je_meta
+from radna_accounting.core.journal_voucher.journal_voucher import JournalVoucherCore
+from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
+from radna_accounting.core.journal_entry.journal_entry import JournalEntryCore
+from radna_accounting.validators.journal_voucher import (
     JournalVoucherModel,
     JournalVoucherDocumentDataMetaData,
     JournalVoucherDocumentDataModel
 )
-from ..validators.data_model import DATA_KEY
+from radna_accounting.validators.data_model import DATA_KEY
 
 class JournalEntryControllerMetaData:
     def __init__(self):

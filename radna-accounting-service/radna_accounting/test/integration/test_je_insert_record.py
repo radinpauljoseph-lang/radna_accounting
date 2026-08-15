@@ -2,8 +2,8 @@
 # import uuid
 # from datetime import date
 # from datetime import datetime, timezone
-# from ...models.chart_of_accounts import *
-# from ...validators.journal_entry import (
+# from radna_accounting.models.chart_of_accounts import *
+# from radna_accounting.validators.journal_entry import (
 #     JournalEntryModel
 # )
 # from radna_accounting.core.journal_entry.journal_entry import JournalEntryCore

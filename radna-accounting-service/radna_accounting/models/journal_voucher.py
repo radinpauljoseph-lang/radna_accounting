@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import text
 from .chart_of_accounts import coa_meta
 from .journal_entry import je_meta
-from ..configs.config import(
+from radna_accounting.configs.config import(
     CONFIGS,
     ENV,
     meta

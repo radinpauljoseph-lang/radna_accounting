@@ -3,13 +3,13 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from ..configs.config import (
+from radna_accounting.configs.config import (
     logger_types,
     loggerOutput,
     NO_ID
 )
-from ..configs.response_codes.error_model import ErrorModel
-from ..configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.error_model import ErrorModel
+from radna_accounting.configs.response_codes.mapping import (
     WEB_CODE,
     SYS_CODE,
     ACP_CODE,
@@ -19,7 +19,7 @@ from ..configs.response_codes.mapping import (
     error_map
 )
 
-from ..controller.accounting_periods import AccountingPeriodsController
+from radna_accounting.controller.accounting_periods import AccountingPeriodsController
 from .request_details.constants import (
     UTF_8,
     REQUEST_REFERENCE_NUMBER,
@@ -156,14 +156,14 @@ def closeAccountingPeriodRequest(request):
             return JsonResponse(result, status=result[STATUS_KEY])
         return JsonResponse(result, status=CREATED_RESPONSE_CODE)
     
-# from ..configs.config import (
+# from radna_accounting.configs.config import (
 #     logger_types,
 #     loggerOutput
 # )
 # from django.http import JsonResponse
 # from django.views.decorators.csrf import csrf_exempt
 # import json
-# from ..controller.accounting_periods import AccountingPeriodsController
+# from radna_accounting.controller.accounting_periods import AccountingPeriodsController
 
 # @csrf_exempt
 # def create_accounting_period_request(request):

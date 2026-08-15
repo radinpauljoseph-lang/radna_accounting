@@ -5,7 +5,7 @@ import string
 import random
 import copy
 from datetime import datetime, timezone
-from ...validators.chart_of_accounts import (
+from radna_accounting.validators.chart_of_accounts import (
     account_types
 )
 from pathlib import Path

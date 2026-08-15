@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import Table, Column, String, INT, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import text
-from ..configs.config import(
+from radna_accounting.configs.config import(
     CONFIGS,
     ENV,
     meta
