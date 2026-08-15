@@ -1,27 +1,27 @@
 import copy
 from datetime import datetime
 from uuid import uuid4
-from ...configs.config  import (
+from radna_accounting.configs.config  import (
     logger_types,
     loggerOutput
 )
-from ...configs.config import engine
-from ...configs.response_codes.mapping import (
+from radna_accounting.configs.config import engine
+from radna_accounting.configs.response_codes.mapping import (
     JNE_CODE,
     error_map
 )
-from ...models.journal_entry import (
+from radna_accounting.models.journal_entry import (
     journal_entry,
     journal_entry_history,
     je_meta,
     je_status,
     je_types
 )
-from ...validators.journal_entry import (
+from radna_accounting.validators.journal_entry import (
     JournalEntryModel,
     JournalEntryHistoryModel
 )
-from ...validators.data_model import (
+from radna_accounting.validators.data_model import (
     DATA_KEY,
     DataModel
 )
@@ -306,10 +306,9 @@ class JournalEntryCore:
         
         result = result.all()
         result = [row._asdict() for row in result]
-        if len(result) > 0:
-            result = [self.dto_model(**data).model_dump() for data in result]
-            result = DataModel(data=result).model_dump()
-            loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.SELECT_RECORDS_BY_MONTH_YEAR} - {result}")
+        result = [self.dto_model(**data).model_dump() for data in result]
+        result = DataModel(data=result).model_dump()
+        loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.SELECT_RECORDS_BY_MONTH_YEAR} - {result}")
         
         loggerOutput(rrn=self.rrn, message=f"{je_core_meta.JOURNAL_ENTRY_CORE}.{je_core_meta.SELECT_RECORDS_BY_MONTH_YEAR} - Done Select Record By Transaction ID By Month & Year")
         return result

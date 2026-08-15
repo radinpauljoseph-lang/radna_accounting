@@ -3,12 +3,12 @@ from functools import wraps
 from typing import Type, Tuple
 import traceback
 
-from ...configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.mapping import (
     SYS_CODE,
     DETAILS_KEY,
     error_map
 )
-from ...configs.config import (
+from radna_accounting.configs.config import (
     logger_types,
     loggerOutput
 )

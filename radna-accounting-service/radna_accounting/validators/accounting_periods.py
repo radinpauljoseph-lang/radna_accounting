@@ -4,11 +4,11 @@ import copy
 from uuid import UUID
 from pydantic import BaseModel, model_validator, Field
 
-from ..models.accounting_periods import (
+from radna_accounting.models.accounting_periods import (
     acp_meta,
     acp_status
 )
-from ..configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.mapping import (
      ACP_CODE,
      HIS_CODE,
      MESSAGE_KEY,

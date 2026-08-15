@@ -6,35 +6,35 @@ from xhtml2pdf import pisa
 from django.template import loader
 import json
 import os
-from ...configs.config import (
+from radna_accounting.configs.config import (
     ENV,
     config_path,
     CONFIGS
 )
 from pathlib import Path
-from ...configs.config import (
+from radna_accounting.configs.config import (
     logger_types,
     loggerOutput
 )
-from ...configs.config import engine
-from ...configs.response_codes.mapping import (
+from radna_accounting.configs.config import engine
+from radna_accounting.configs.response_codes.mapping import (
     JNV_CODE,
     error_map
 )
-from ...models.journal_voucher import (
+from radna_accounting.models.journal_voucher import (
     jv_meta,
     journal_voucher,
     journal_voucher_history
 )
-from ...validators.journal_voucher import (
+from radna_accounting.validators.journal_voucher import (
     jv_data_content_meta,
     JournalVoucherModel,
     JournalVoucherDocumentDataModel,
     JournalVoucherDataContentModel,
     JournalVoucherHistoryModel
 )
-from ...validators.journal_voucher import JournalVoucherDocumentDataModel
-from ...validators.data_model import (
+from radna_accounting.validators.journal_voucher import JournalVoucherDocumentDataModel
+from radna_accounting.validators.data_model import (
     DATA_KEY,
     DataModel
 )

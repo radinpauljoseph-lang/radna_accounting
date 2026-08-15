@@ -3,8 +3,8 @@ from datetime import datetime
 import copy
 from pydantic import BaseModel, model_validator
 
-from ..models.transaction_ids import ti_meta
-from ..configs.response_codes.mapping import (
+from radna_accounting.models.transaction_ids import ti_meta
+from radna_accounting.configs.response_codes.mapping import (
      TIS_CODE,
      MESSAGE_KEY,
      error_map

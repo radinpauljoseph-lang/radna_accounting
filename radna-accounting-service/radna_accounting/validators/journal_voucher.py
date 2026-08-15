@@ -4,10 +4,10 @@ import uuid
 import copy
 import re
 from uuid import UUID
-from ..models.journal_entry import je_meta
-from ..models.journal_voucher import jv_meta
+from radna_accounting.models.journal_entry import je_meta
+from radna_accounting.models.journal_voucher import jv_meta
 
-from ..configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.mapping import (
     JNV_CODE,
     HIS_CODE,
     MESSAGE_KEY,

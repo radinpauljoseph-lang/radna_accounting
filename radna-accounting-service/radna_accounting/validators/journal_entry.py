@@ -4,14 +4,14 @@ import uuid
 import copy
 import re
 from uuid import UUID
-from ..models.chart_of_accounts import coa_meta
-from ..models.journal_entry import (
+from radna_accounting.models.chart_of_accounts import coa_meta
+from radna_accounting.models.journal_entry import (
     je_meta,
     je_status,
     je_types
 )
 
-from ..configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.mapping import (
     COA_CODE,
     JNE_CODE,
     HIS_CODE,

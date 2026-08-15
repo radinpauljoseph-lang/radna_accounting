@@ -14,12 +14,10 @@ class TestTransactionIdsModel:
 
     def test_happy_path_current_year(self):
         current_datetime = datetime.now()
-        current_year = current_datetime.year
-        current_month = current_datetime.month
 
         payload = TransactionIdsPayloadGenerator(
-            month=random.randint(1, current_month),
-            year=current_year,
+            month=random.randint(1, current_datetime.month),
+            year=current_datetime.year,
             id=FIRST_ID
         ).model_dump()
 
@@ -87,7 +85,7 @@ class TestTransactionIdsModel:
     @pytest.mark.parametrize("param", ["ascii_lowercase", "ascii_uppercase", "punctuation"])
     def test_id_invalid_pattern(self, param):
         expected = "TIS0008"
-        
+
         string_patterns = {
             "ascii_lowercase": string.ascii_lowercase,
             "ascii_uppercase": string.ascii_uppercase,

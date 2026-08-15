@@ -3,13 +3,13 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from ..configs.config import (
+from radna_accounting.configs.config import (
     logger_types,
     loggerOutput,
     NO_ID
 )
-from ..configs.response_codes.error_model import ErrorModel
-from ..configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.error_model import ErrorModel
+from radna_accounting.configs.response_codes.mapping import (
     WEB_CODE,
     COA_CODE,
     MESSAGE_KEY,
@@ -17,7 +17,7 @@ from ..configs.response_codes.mapping import (
     error_map
 )
 
-from ..controller.chart_of_accounts import ChartOfAccountsController
+from radna_accounting.controller.chart_of_accounts import ChartOfAccountsController
 from .request_details.constants import (
     UTF_8,
     REQUEST_REFERENCE_NUMBER,

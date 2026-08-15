@@ -1,13 +1,13 @@
 import copy
 from datetime import datetime
-from ..utils.decorators.error_handling import catchAndLog
-from ..configs.config import (
+from radna_accounting.utils.decorators.error_handling import catchAndLog
+from radna_accounting.configs.config import (
     logger_types,
     loggerOutput,
     engine,
     CONFIGS
 )
-from ..configs.response_codes.mapping import (
+from radna_accounting.configs.response_codes.mapping import (
     COA_CODE,
     TIS_CODE,
     ACP_CODE,
@@ -16,18 +16,18 @@ from ..configs.response_codes.mapping import (
     DETAILS_KEY,
     error_map
 )
-from ..core.journal_entry.journal_entry import JournalEntryCore
-from ..core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
-from ..core.transaction_ids.transaction_ids import TransactionIdsCore
-from ..core.accounting_periods.accounting_periods import AccountingPeriodsCore
-from ..validators.journal_entry import JournalEntryModel
-from ..validators.data_model import DATA_KEY
-from ..models.transaction_ids import ti_meta
-from ..models.accounting_periods import (
+from radna_accounting.core.journal_entry.journal_entry import JournalEntryCore
+from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
+from radna_accounting.core.transaction_ids.transaction_ids import TransactionIdsCore
+from radna_accounting.core.accounting_periods.accounting_periods import AccountingPeriodsCore
+from radna_accounting.validators.journal_entry import JournalEntryModel
+from radna_accounting.validators.data_model import DATA_KEY
+from radna_accounting.models.transaction_ids import ti_meta
+from radna_accounting.models.accounting_periods import (
     acp_meta,
     acp_status
 )
-from ..models.journal_entry import (
+from radna_accounting.models.journal_entry import (
     je_meta,
     je_status,
     je_types

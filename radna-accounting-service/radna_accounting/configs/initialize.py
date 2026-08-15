@@ -4,19 +4,19 @@ from .config import (
     meta,
     engine
 )
-from ..models.chart_of_accounts import (
+from radna_accounting.models.chart_of_accounts import (
     chart_of_accounts
 )
-from ..models.journal_entry import (
+from radna_accounting.models.journal_entry import (
     journal_entry,
     journal_entry_history
 )
-from ..models.accounting_periods import (
+from radna_accounting.models.accounting_periods import (
     accounting_periods,
     accounting_periods_history
 )
-from ..models.transaction_ids import transaction_ids
-from ..models.journal_voucher import (
+from radna_accounting.models.transaction_ids import transaction_ids
+from radna_accounting.models.journal_voucher import (
     journal_voucher,
     journal_voucher_history
 )

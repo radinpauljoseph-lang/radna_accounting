@@ -1,7 +1,6 @@
 import copy
 import re
 from sqlalchemy import cast, Integer, desc
-from radna_accounting.
 from radna_accounting.configs.config  import (
     logger_types,
     loggerOutput
@@ -21,8 +20,6 @@ from radna_accounting.validators.data_model import (
     DATA_KEY,
     DataModel
 )
-
-from sqlalchemy import extract
 
 class TransactionIdsCoreMetaData:
     def __init__(self):
