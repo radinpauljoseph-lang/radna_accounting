@@ -7,25 +7,22 @@ from radna_accounting.models.accounting_periods import (
 from radna_accounting.controller.accounting_periods import AccountingPeriodsController
 from radna_accounting.test.data.accounting_periods import AccountingPeriodsPayloadGenerator
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
-from radna_accounting.test.helpers.helpers import check_month_year_period_availability
+from radna_accounting.test.helpers.helpers import checkMonthYearPeriodAvailability
 from radna_accounting.validators.transaction_ids import FIRST_ID
 from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
 
 class TestAccountingPeriodsControllerCreateAccountingPeriod:
 
     def test_happy_path(self):
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(SQLiteTestDatabaseCredentials().model_dump())
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@")
         payload = AccountingPeriodsPayloadGenerator().model_dump()
 
         while True:
-            is_available = check_month_year_period_availability(month=payload[acp_meta.MONTH], year=payload[acp_meta.YEAR])
+            is_available = checkMonthYearPeriodAvailability(month=payload[acp_meta.MONTH], year=payload[acp_meta.YEAR])
             current_datetime = datetime.now()
             end_datetime = current_datetime + timedelta(seconds=30)
             if is_available:
                 payload = AccountingPeriodsPayloadGenerator().model_dump()
-                is_available = check_month_year_period_availability(month=payload[acp_meta.MONTH], year=payload[acp_meta.YEAR])
+                is_available = checkMonthYearPeriodAvailability(month=payload[acp_meta.MONTH], year=payload[acp_meta.YEAR])
 
                 if current_datetime >= end_datetime:
                     raise Exception({

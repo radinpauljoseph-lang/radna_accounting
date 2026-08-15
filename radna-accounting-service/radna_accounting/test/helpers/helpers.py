@@ -1,24 +1,18 @@
 
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
 from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
+from radna_accounting.test.data.db.accounting_periods.queries import SelectAccountingPeriodByMonthYear
+from radna_accounting.test.data.db.constants import SQL_TEXT_FIELD
 
-def check_month_year_period_availability(month: int, year: int):
+def checkMonthYearPeriodAvailability(month: int, year: int):
+    sql_query_details = SelectAccountingPeriodByMonthYear(
+        period_month=month,
+        period_year=year
+    )
     db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
         .connect()\
-        .setCommand(f"""
-        select
-            month,
-            year
-        from accounting_periods
-        where 1=1
-        and month = :period_month
-        and year = :period_year
-        """
-        )\
-        .execute({
-            "period_month": month,
-            "period_year": year
-        })
+        .setCommand(sql_query_details.text)\
+        .execute(sql_query_details.model_dump(exclude=SQL_TEXT_FIELD))
 
     result = db_obj.getData()
     return True if result.shape[0] > 0 else False

@@ -2,8 +2,7 @@ import pytest
 import logging
 import string
 import random
-from datetime import datetime, timezone
-from radna_accounting.models.chart_of_accounts import coa_meta
+from datetime import datetime
 from radna_accounting.validators.chart_of_accounts import (
     ChartOfAccountsModel
 )
@@ -11,19 +10,24 @@ from radna_accounting.validators.data_model import DATA_KEY
 from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAccountsCore
 from radna_accounting.test.data.chart_of_accounts import ChartOfAccountsPayloadGenerator
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
-
 from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
-
+from radna_accounting.test.data.db.chart_of_accounts.queries import SelectChartOfAccountsByDetails
+from radna_accounting.test.data.db.constants import SQL_TEXT_FIELD
 
 class TestAccountSelectRecord:
 
     @pytest.mark.parametrize("param", ["byId", "byName"])
     def test_happy_path(self, param):
         core_model = ChartOfAccountsCore()
-        current_datetime = datetime.now()
-        current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
         payload = ChartOfAccountsPayloadGenerator().model_dump()
         payload = ChartOfAccountsModel(**payload)
+
+        sql_query_details = SelectChartOfAccountsByDetails(
+              coa_account_id=payload.account_id,
+              coa_name=payload.name,
+              coa_type=payload.type,
+              coa_description=payload.description
+        )
 
         core_method_map = {
             "byId": {
@@ -44,41 +48,8 @@ class TestAccountSelectRecord:
 
         db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
             .connect()\
-            .setCommand(f"""
-            SELECT
-                account_id, 
-                name,
-                type,
-                description, 
-                account_mapping, 
-                created_date, 
-                updated_date
-            FROM chart_of_accounts
-            WHERE 1=1
-            AND account_id = :coa_account_id
-            AND name = :coa_name
-            AND type = :coa_type
-            AND description = :coa_description
-            AND (
-                account_mapping IS NULL
-                OR (
-                    account_mapping IS NOT NULL
-                    AND account_mapping = :coa_account_mapping
-                )
-            )
-            AND created_date >= :coa_created_date
-            AND updated_date >= :coa_updated_date
-        """
-        )\
-        .execute({
-            "coa_account_id": payload.account_id,
-            "coa_name": payload.name,
-            "coa_type": payload.type,
-            "coa_description": payload.description,
-            "coa_account_mapping": "",
-            "coa_created_date": current_datetime,
-            "coa_updated_date": current_datetime
-        })
+            .setCommand(sql_query_details.text)\
+            .execute(sql_query_details.model_dump(exclude=SQL_TEXT_FIELD))
 
         result = db_obj.getData()
 
