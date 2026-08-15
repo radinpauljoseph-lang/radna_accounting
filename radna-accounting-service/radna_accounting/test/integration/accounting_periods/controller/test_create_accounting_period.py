@@ -9,13 +9,14 @@ from radna_accounting.test.data.accounting_periods import AccountingPeriodsPaylo
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
 from radna_accounting.test.helpers.helpers import check_month_year_period_availability
 from radna_accounting.validators.transaction_ids import FIRST_ID
-creds = {
-    "database": "temp_state.db"
-}
+from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
 
 class TestAccountingPeriodsControllerCreateAccountingPeriod:
 
     def test_happy_path(self):
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print(SQLiteTestDatabaseCredentials().model_dump())
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@")
         payload = AccountingPeriodsPayloadGenerator().model_dump()
 
         while True:
@@ -35,8 +36,8 @@ class TestAccountingPeriodsControllerCreateAccountingPeriod:
 
         result = AccountingPeriodsController().createAccountingPeriod(payload)
 
-        acp_db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        acp_db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             select
                 month,
@@ -55,8 +56,8 @@ class TestAccountingPeriodsControllerCreateAccountingPeriod:
             "period_status": acp_status.OPEN
         })
 
-        ti_db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        ti_db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             select
                 month,

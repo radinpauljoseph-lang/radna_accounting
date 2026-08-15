@@ -12,9 +12,7 @@ from radna_accounting.core.chart_of_accounts.chart_of_accounts import ChartOfAcc
 from radna_accounting.test.data.chart_of_accounts import ChartOfAccountsPayloadGenerator
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
 
-creds = {
-    "database": "temp_state.db"
-}
+from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
 
 
 class TestAccountSelectRecord:
@@ -22,19 +20,11 @@ class TestAccountSelectRecord:
     @pytest.mark.parametrize("param", ["byId", "byName"])
     def test_happy_path(self, param):
         core_model = ChartOfAccountsCore()
-        current_datetime = datetime.now(timezone.utc)
+        current_datetime = datetime.now()
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
         payload = ChartOfAccountsPayloadGenerator().model_dump()
         payload = ChartOfAccountsModel(**payload)
-        where_clause_values = {
-            "coa_account_id": payload.account_id,
-            "coa_name": payload.name,
-            "coa_type": payload.type,
-            "coa_description": payload.description,
-            "coa_account_mapping": "",
-            "coa_created_date": current_datetime,
-            "coa_updated_date": current_datetime
-        }
+
         core_method_map = {
             "byId": {
                 "method": core_model.selectRecordById,
@@ -52,8 +42,8 @@ class TestAccountSelectRecord:
             core_method_map[param]['value']
         )
 
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id, 
@@ -80,7 +70,15 @@ class TestAccountSelectRecord:
             AND updated_date >= :coa_updated_date
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": payload.account_id,
+            "coa_name": payload.name,
+            "coa_type": payload.type,
+            "coa_description": payload.description,
+            "coa_account_mapping": "",
+            "coa_created_date": current_datetime,
+            "coa_updated_date": current_datetime
+        })
 
         result = db_obj.getData()
 

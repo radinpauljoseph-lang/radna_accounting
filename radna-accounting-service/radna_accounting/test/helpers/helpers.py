@@ -1,16 +1,10 @@
 
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
-creds = {
-    "database": "temp_state.db"
-}
+from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
 
 def check_month_year_period_availability(month: int, year: int):
-    where_clause_values = {
-        "period_month": month,
-        "period_year": year
-    }
-    db_obj = SQLiteClient(creds)\
-        .connect(creds)\
+    db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+        .connect()\
         .setCommand(f"""
         select
             month,
@@ -21,7 +15,10 @@ def check_month_year_period_availability(month: int, year: int):
         and year = :period_year
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "period_month": month,
+            "period_year": year
+        })
 
     result = db_obj.getData()
     return True if result.shape[0] > 0 else False

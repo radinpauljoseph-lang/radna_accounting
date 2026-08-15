@@ -15,7 +15,7 @@ fake = Faker()
 
 @pytest.fixture(scope="function")
 def generate_account_request_payload():
-    current_datetime = datetime.now(timezone.utc)
+    current_datetime = datetime.now()
     input_values = {
         "account_id": ''.join(random.choices(string.digits, k=6)),
         "name": fake.bs(),
