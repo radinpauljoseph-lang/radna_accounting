@@ -39,16 +39,10 @@ slash = "\\" if platform.system() == "Windows" else "//"
 config_path = f"{str(BASE_DIR)}{slash}config.ini"
 
 ENV = os.environ['ENV']
-print("@@@@@@@@@@@@@@@@")
-print(f"ENV: {ENV}")
-print("@@@@@@@@@@@@@@@@")
 CONFIGS = configparser.ConfigParser()
 
 CONFIGS.read(config_path)
 DB_CONNECTION = CONFIGS[f"{ENV}.database"]['connection_string']
-print("@@@@@@@@@@@@@@@@")
-print(f"DB_CONNECTION: {DB_CONNECTION}")
-print("@@@@@@@@@@@@@@@@")
 engine = create_engine(DB_CONNECTION, echo=False)
 
 meta = MetaData()

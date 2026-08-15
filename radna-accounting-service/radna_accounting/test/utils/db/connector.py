@@ -115,14 +115,14 @@ DB connector for Postgres/RDS tables
 '''
 class PostgreSQLClient(BaseDBClient):
     def __init__(self, creds):
-        super().__init__(creds)
-        self.connection = postgres_connect(creds)
+        super().__init__(SQLiteTestDatabaseCredentials().model_dump())
+        self.connection = postgres_connect(SQLiteTestDatabaseCredentials().model_dump())
         self.cursor = self.connection.cursor()
         logging.info("Connected to PostgreSQL Database successfully")
 
     def connect(self, creds):
-        super().connect(creds)
-        self.connection = postgres_connect(creds)
+        super().connect()
+        self.connection = postgres_connect(SQLiteTestDatabaseCredentials().model_dump())
         self.cursor = self.connection.cursor()
         logging.info("Connected to PostgreSQL Database successfully")
         return self
@@ -166,14 +166,14 @@ DB connector for SQLite tables
 '''
 class SQLiteClient(BaseDBClient):
     def __init__(self, creds):
-        super().__init__(creds)
-        self.connection = sqlite_connect(creds)
+        super().__init__(SQLiteTestDatabaseCredentials().model_dump())
+        self.connection = sqlite_connect(SQLiteTestDatabaseCredentials().model_dump())
         self.cursor = self.connection.cursor()
         logging.info("Connected to SQLite successfully")
 
     def connect(self, creds):
-        super().connect(creds)
-        self.connection = sqlite_connect(creds)
+        super().connect()
+        self.connection = sqlite_connect(SQLiteTestDatabaseCredentials().model_dump())
         self.cursor = self.connection.cursor()
         logging.info("Connected to SQLite successfully")
         return self

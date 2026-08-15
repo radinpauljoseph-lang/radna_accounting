@@ -11,9 +11,7 @@ from radna_accounting.models.chart_of_accounts import (
 from radna_accounting.test.data.chart_of_accounts import ChartOfAccountsPayloadGenerator
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
 from radna_accounting.configs.response_codes.mapping import COA_CODE
-creds = {
-    "database": "temp_state.db"
-}
+from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
 
 class TestChartOfAccountsControllerCreateAccount:
 
@@ -21,20 +19,13 @@ class TestChartOfAccountsControllerCreateAccount:
         payload = ChartOfAccountsPayloadGenerator(is_dates_included=False).model_dump()
         payload[coa_meta.DESCRIPTION] = None
 
-        current_datetime = datetime.now(timezone.utc)
+        current_datetime = datetime.now()
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
-        where_clause_values = {
-            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
-            "coa_name": payload[coa_meta.NAME],
-            "coa_type": payload[coa_meta.TYPE],
-            "coa_created_date": current_datetime,
-            "coa_updated_date": current_datetime
-        }
 
         ChartOfAccountsController().createAccount(payload)
 
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id, 
@@ -55,7 +46,13 @@ class TestChartOfAccountsControllerCreateAccount:
             AND updated_date >= :coa_updated_date
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
+            "coa_name": payload[coa_meta.NAME],
+            "coa_type": payload[coa_meta.TYPE],
+            "coa_created_date": current_datetime,
+            "coa_updated_date": current_datetime
+        })
 
         result = db_obj.getData()
 
@@ -71,23 +68,14 @@ class TestChartOfAccountsControllerCreateAccount:
             account_mapping=payload[coa_meta.ACCOUNT_ID]
         ).model_dump()
                 
-        current_datetime = datetime.now(timezone.utc)
+        current_datetime = datetime.now()
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
-        where_clause_values = {
-            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
-            "coa_name": payload[coa_meta.NAME],
-            "coa_type": payload[coa_meta.TYPE],
-            "coa_description": payload[coa_meta.DESCRIPTION],
-            "coa_account_mapping": payload[coa_meta.ACCOUNT_MAPPING],
-            "coa_created_date": current_datetime,
-            "coa_updated_date": current_datetime
-        }
 
         ChartOfAccountsController().createAccount(payload)
 
 
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id, 
@@ -108,7 +96,15 @@ class TestChartOfAccountsControllerCreateAccount:
             AND updated_date >= :coa_updated_date
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
+            "coa_name": payload[coa_meta.NAME],
+            "coa_type": payload[coa_meta.TYPE],
+            "coa_description": payload[coa_meta.DESCRIPTION],
+            "coa_account_mapping": payload[coa_meta.ACCOUNT_MAPPING],
+            "coa_created_date": current_datetime,
+            "coa_updated_date": current_datetime
+        })
 
         result = db_obj.getData()
 
@@ -118,21 +114,13 @@ class TestChartOfAccountsControllerCreateAccount:
         payload = ChartOfAccountsPayloadGenerator(is_dates_included=False).model_dump()
         payload[coa_meta.DESCRIPTION] = Faker().bs()
 
-        current_datetime = datetime.now(timezone.utc)
+        current_datetime = datetime.now()
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
-        where_clause_values = {
-            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
-            "coa_name": payload[coa_meta.NAME],
-            "coa_type": payload[coa_meta.TYPE],
-            "coa_description": payload[coa_meta.DESCRIPTION],
-            "coa_created_date": current_datetime,
-            "coa_updated_date": current_datetime
-        }
 
         ChartOfAccountsController().createAccount(payload)
 
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id, 
@@ -153,7 +141,14 @@ class TestChartOfAccountsControllerCreateAccount:
             AND updated_date >= :coa_updated_date
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
+            "coa_name": payload[coa_meta.NAME],
+            "coa_type": payload[coa_meta.TYPE],
+            "coa_description": payload[coa_meta.DESCRIPTION],
+            "coa_created_date": current_datetime,
+            "coa_updated_date": current_datetime
+        })
 
         result = db_obj.getData()
 
@@ -165,20 +160,13 @@ class TestChartOfAccountsControllerCreateAccount:
         payload[coa_meta.DESCRIPTION] = None
         payload[coa_meta.TYPE] = param
 
-        current_datetime = datetime.now(timezone.utc)
+        current_datetime = datetime.now()
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
-        where_clause_values = {
-            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
-            "coa_name": payload[coa_meta.NAME],
-            "coa_type": payload[coa_meta.TYPE],
-            "coa_created_date": current_datetime,
-            "coa_updated_date": current_datetime
-        }
 
         ChartOfAccountsController().createAccount(payload)
 
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id, 
@@ -198,7 +186,13 @@ class TestChartOfAccountsControllerCreateAccount:
             AND updated_date >= :coa_updated_date
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
+            "coa_name": payload[coa_meta.NAME],
+            "coa_type": payload[coa_meta.TYPE],
+            "coa_created_date": current_datetime,
+            "coa_updated_date": current_datetime
+        })
 
         result = db_obj.getData()
 
@@ -214,23 +208,16 @@ class TestChartOfAccountsControllerCreateAccount:
             account_id=payload[coa_meta.ACCOUNT_ID]
         ).model_dump()
                 
-        current_datetime = datetime.now(timezone.utc)
+        current_datetime = datetime.now()
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
-        where_clause_values = {
-            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
-            "coa_name": payload[coa_meta.NAME],
-            "coa_type": payload[coa_meta.TYPE],
-            "coa_created_date": current_datetime,
-            "coa_updated_date": current_datetime
-        }
 
         output = ChartOfAccountsController().createAccount(payload)
         assert output["status"] == 400
         assert output["code"] == "COA0105"
         assert output["message"] == f"Account ID \'{payload[coa_meta.ACCOUNT_ID]}\' already exists"
         
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id, 
@@ -250,7 +237,13 @@ class TestChartOfAccountsControllerCreateAccount:
             AND updated_date >= :coa_updated_date
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
+            "coa_name": payload[coa_meta.NAME],
+            "coa_type": payload[coa_meta.TYPE],
+            "coa_created_date": current_datetime,
+            "coa_updated_date": current_datetime
+        })
 
         result = db_obj.getData()
 
@@ -266,24 +259,16 @@ class TestChartOfAccountsControllerCreateAccount:
             name=payload[coa_meta.NAME]
         ).model_dump()
                 
-        current_datetime = datetime.now(timezone.utc)
+        current_datetime = datetime.now()
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
-        where_clause_values = {
-            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
-            "coa_name": payload[coa_meta.NAME],
-            "coa_type": payload[coa_meta.TYPE],
-            "coa_account_mapping": "",
-            "coa_created_date": current_datetime,
-            "coa_updated_date": current_datetime
-        }
 
         output = ChartOfAccountsController().createAccount(payload)
         assert output["status"] == 400
         assert output["code"] == "COA0103"
         assert output["message"] == f"Account Name \'{payload[coa_meta.NAME]}\' already exists"
         
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id, 
@@ -303,7 +288,14 @@ class TestChartOfAccountsControllerCreateAccount:
             AND updated_date >= :coa_updated_date
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
+            "coa_name": payload[coa_meta.NAME],
+            "coa_type": payload[coa_meta.TYPE],
+            "coa_account_mapping": "",
+            "coa_created_date": current_datetime,
+            "coa_updated_date": current_datetime
+        })
 
         result = db_obj.getData()
 
@@ -313,24 +305,16 @@ class TestChartOfAccountsControllerCreateAccount:
         payload = ChartOfAccountsPayloadGenerator(is_dates_included=False).model_dump()
         payload[coa_meta.ACCOUNT_MAPPING] = ''.join(random.choices(string.digits, k=6))
 
-        current_datetime = datetime.now(timezone.utc)
+        current_datetime = datetime.now()
         current_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.") + f"{int(current_datetime.microsecond / 1000):03d}"
-        where_clause_values = {
-            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
-            "coa_name": payload[coa_meta.NAME],
-            "coa_type": payload[coa_meta.TYPE],
-            "coa_account_mapping": payload[coa_meta.ACCOUNT_MAPPING],
-            "coa_created_date": current_datetime,
-            "coa_updated_date": current_datetime
-        }
 
         output = ChartOfAccountsController().createAccount(payload)
         assert output["status"] == 400
         assert output["code"] == "COA0104"
         assert output["message"] == f"Account Map \'{payload[coa_meta.ACCOUNT_MAPPING]}\' Not Found"
 
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id, 
@@ -356,7 +340,14 @@ class TestChartOfAccountsControllerCreateAccount:
             AND updated_date >= :coa_updated_date
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": payload[coa_meta.ACCOUNT_ID],
+            "coa_name": payload[coa_meta.NAME],
+            "coa_type": payload[coa_meta.TYPE],
+            "coa_account_mapping": payload[coa_meta.ACCOUNT_MAPPING],
+            "coa_created_date": current_datetime,
+            "coa_updated_date": current_datetime
+        })
 
         result = db_obj.getData()
 

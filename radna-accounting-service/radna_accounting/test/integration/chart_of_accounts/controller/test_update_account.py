@@ -16,9 +16,7 @@ from radna_accounting.test.data.chart_of_accounts import (
 )
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
 from radna_accounting.configs.response_codes.mapping import COA_CODE
-creds = {
-    "database": "temp_state.db"
-}
+from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
 
 class TestChartOfAccountsControllerUpdateAccount:
 
@@ -44,20 +42,13 @@ class TestChartOfAccountsControllerUpdateAccount:
         
         payload = ChartOfAccountsUpdatePayloadGenerator(**payload).model_dump()
 
-        where_clause_values = {
-            "coa_account_id": account_id,
-            "coa_name": payload[coa_meta.NAME],
-            "coa_type": payload[coa_meta.TYPE],
-            "coa_account_mapping": payload[coa_meta.ACCOUNT_MAPPING]
-        }
-
         ChartOfAccountsController().updateAccount(
             id=account_id,
             obj=payload
         )
 
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id, 
@@ -81,7 +72,12 @@ class TestChartOfAccountsControllerUpdateAccount:
             )
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": account_id,
+            "coa_name": payload[coa_meta.NAME],
+            "coa_type": payload[coa_meta.TYPE],
+            "coa_account_mapping": payload[coa_meta.ACCOUNT_MAPPING]
+        })
 
         result = db_obj.getData()
 
@@ -93,13 +89,6 @@ class TestChartOfAccountsControllerUpdateAccount:
         account_id = payload[coa_meta.ACCOUNT_ID]
         payload = ChartOfAccountsUpdatePayloadGenerator(**payload).model_dump()
 
-        where_clause_values = {
-            "coa_account_id": account_id,
-            "coa_name": payload[coa_meta.NAME],
-            "coa_type": payload[coa_meta.TYPE],
-            "coa_account_mapping": payload[coa_meta.ACCOUNT_MAPPING]
-        }
-
         output = ChartOfAccountsController().updateAccount(
             id=account_id,
             obj=payload
@@ -109,8 +98,8 @@ class TestChartOfAccountsControllerUpdateAccount:
         assert output["code"] == "COA0101"
         assert output["message"] == f"Account ID \'{account_id}\' does not exist"
 
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id, 
@@ -134,7 +123,12 @@ class TestChartOfAccountsControllerUpdateAccount:
             )
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": account_id,
+            "coa_name": payload[coa_meta.NAME],
+            "coa_type": payload[coa_meta.TYPE],
+            "coa_account_mapping": payload[coa_meta.ACCOUNT_MAPPING]
+        })
 
         result = db_obj.getData()
 
@@ -154,9 +148,6 @@ class TestChartOfAccountsControllerUpdateAccount:
 
         payload[coa_meta.NAME] = account_name
         payload = ChartOfAccountsUpdatePayloadGenerator(**payload).model_dump()
-        where_clause_values = {
-            "coa_name": current_name
-        }
 
         output = ChartOfAccountsController().updateAccount(
             id=account_id,
@@ -167,8 +158,8 @@ class TestChartOfAccountsControllerUpdateAccount:
         assert output["code"] == "COA0103"
         assert output["message"] == f"Account Name \'{account_name}\' already exists"
 
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 name
@@ -177,7 +168,9 @@ class TestChartOfAccountsControllerUpdateAccount:
             AND name = :coa_name
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_name": current_name
+        })
 
         result = db_obj.getData()
 
@@ -191,9 +184,6 @@ class TestChartOfAccountsControllerUpdateAccount:
 
         payload[coa_meta.ACCOUNT_MAPPING] = ''.join(random.choices(string.digits, k=6))
         payload = ChartOfAccountsUpdatePayloadGenerator(**payload).model_dump()
-        where_clause_values = {
-            "coa_account_id": account_id
-        }
 
         output = ChartOfAccountsController().updateAccount(
             id=account_id,
@@ -204,8 +194,8 @@ class TestChartOfAccountsControllerUpdateAccount:
         assert output["code"] == "COA0104"
         assert output["message"] == f"Account Map \'{payload[coa_meta.ACCOUNT_MAPPING]}\' Not Found"
 
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id,
@@ -216,7 +206,9 @@ class TestChartOfAccountsControllerUpdateAccount:
             AND account_mapping IS NULL
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": account_id
+        })
 
         result = db_obj.getData()
 
@@ -239,10 +231,6 @@ class TestChartOfAccountsControllerUpdateAccount:
 
         payload[coa_meta.ACCOUNT_MAPPING] = ''.join(random.choices(string.digits, k=6))
         payload = ChartOfAccountsUpdatePayloadGenerator(**payload).model_dump()
-        where_clause_values = {
-            "coa_account_id": account_id,
-            "coa_account_mapping": current_account_mapping_value
-        }
 
         output = ChartOfAccountsController(rrn=str(uuid.uuid4())).updateAccount(
             id=account_id,
@@ -253,8 +241,8 @@ class TestChartOfAccountsControllerUpdateAccount:
         assert output["code"] == "COA0104"
         assert output["message"] == f"Account Map \'{payload[coa_meta.ACCOUNT_MAPPING]}\' Not Found"
 
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             SELECT
                 account_id,
@@ -265,7 +253,10 @@ class TestChartOfAccountsControllerUpdateAccount:
             AND account_mapping = :coa_account_mapping
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "coa_account_id": account_id,
+            "coa_account_mapping": current_account_mapping_value
+        })
 
         result = db_obj.getData()
 

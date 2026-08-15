@@ -10,9 +10,7 @@ from radna_accounting.test.data.accounting_periods import AccountingPeriodsPaylo
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
 from radna_accounting.test.helpers.helpers import check_month_year_period_availability
 
-creds = {
-    "database": "temp_state.db"
-}
+from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
 
 class TestAccountingPeriodsInsertRecord:
 
@@ -39,14 +37,8 @@ class TestAccountingPeriodsInsertRecord:
 
         AccountingPeriodsCore().insertRecord(payload)
 
-        where_clause_values = {
-            "period_month": payload.month,
-            "period_year": payload.year,
-            "period_status": payload.status
-        }
-
-        db_obj = SQLiteClient(creds)\
-            .connect(creds)\
+        db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
+            .connect()\
             .setCommand(f"""
             select
                 month,
@@ -59,7 +51,11 @@ class TestAccountingPeriodsInsertRecord:
             and status = :period_status
         """
         )\
-        .execute(where_clause_values)
+        .execute({
+            "period_month": payload.month,
+            "period_year": payload.year,
+            "period_status": payload.status
+        })
 
         result = db_obj.getData()
 
