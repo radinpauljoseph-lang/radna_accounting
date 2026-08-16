@@ -8,10 +8,7 @@ from radna_accounting.models.accounting_periods import (
 )
 from radna_accounting.core.accounting_periods.accounting_periods import AccountingPeriodsCore
 from radna_accounting.test.data.accounting_periods import AccountingPeriodsPayloadGenerator
-from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
 from radna_accounting.test.helpers.helpers import checkMonthYearPeriodAvailability
-
-from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
 
 class TestAccountingPeriodsSelectRecord:
 

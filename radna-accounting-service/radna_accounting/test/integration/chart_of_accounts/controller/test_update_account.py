@@ -15,7 +15,6 @@ from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteCli
 from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
 from radna_accounting.test.data.db.chart_of_accounts.queries import (
     SelectChartOfAccountsByDetails,
-    SelectChartOfAccountsByDetailsDescriptionIsNull,
     SelectChartOfAccountsByAccountId,
     SelectChartOfAccountsByName
 )

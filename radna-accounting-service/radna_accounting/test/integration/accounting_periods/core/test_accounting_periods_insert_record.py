@@ -9,8 +9,9 @@ from radna_accounting.core.accounting_periods.accounting_periods import Accounti
 from radna_accounting.test.data.accounting_periods import AccountingPeriodsPayloadGenerator
 from radna_accounting.test.utils.database_handler.sqlite_client import SQLiteClient
 from radna_accounting.test.helpers.helpers import checkMonthYearPeriodAvailability
-
 from radna_accounting.test.configs.config import SQLiteTestDatabaseCredentials
+from radna_accounting.test.data.db.accounting_periods.queries import SelectAccountingPeriodDetails
+from radna_accounting.test.data.db.constants import SQL_TEXT_FIELD
 
 class TestAccountingPeriodsInsertRecord:
 
@@ -35,28 +36,18 @@ class TestAccountingPeriodsInsertRecord:
         payload = AccountingPeriodsModel(**payload)
         payload.status = acp_status.OPEN
 
+        sql_query_details = SelectAccountingPeriodDetails(
+            period_month=payload.month,
+            period_year=payload.year,
+            period_status=payload.status
+        )
+
         AccountingPeriodsCore().insertRecord(payload)
 
         db_obj = SQLiteClient(SQLiteTestDatabaseCredentials().model_dump())\
             .connect()\
-            .setCommand(f"""
-            select
-                month,
-                year,
-                status
-            from accounting_periods
-            where 1=1
-            and month = :period_month
-            and year = :period_year
-            and status = :period_status
-        """
-        )\
-        .execute({
-            "period_month": payload.month,
-            "period_year": payload.year,
-            "period_status": payload.status
-        })
-
+            .setCommand(sql_query_details.text)\
+        .execute(sql_query_details.model_dump(exclude=SQL_TEXT_FIELD))
         result = db_obj.getData()
 
         assert result.shape[0] == 1
