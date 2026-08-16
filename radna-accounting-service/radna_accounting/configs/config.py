@@ -33,11 +33,9 @@ def loggerOutput(rrn: str = None, method: str = logger_types.INFO, message: str 
     logger_msg = f"[{now}][{rrn}] - {message}" if rrn != NO_ID else f"[{now}] - {message}"
     logger_type_map[method](logger_msg)
 
+config_path = Path(__file__).parent / "config.ini"
+
 BASE_DIR = Path(__file__).resolve().parent
-
-slash = "\\" if platform.system() == "Windows" else "//"
-config_path = f"{str(BASE_DIR)}{slash}config.ini"
-
 ENV = os.environ['ENV']
 CONFIGS = configparser.ConfigParser()
 
