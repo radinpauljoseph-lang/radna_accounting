@@ -5,8 +5,6 @@ from radna_accounting.validators.chart_of_accounts import ChartOfAccountsModel
 from radna_accounting.test.data.chart_of_accounts import ChartOfAccountsPayloadGenerator
 from radna_accounting.models.chart_of_accounts import coa_meta
 
-
-
 class TestChartOfAccountsModel:
 
     def test_happy_path(self):
