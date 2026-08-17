@@ -34,19 +34,19 @@ ti_core_meta = TransactionIdsCoreMetaData()
 
 class TransactionIdsCore:
     def __init__(self, rrn = None):
-        self.dto_model = TransactionIdsModel
-        self.engine = engine
-        self.rrn = rrn
+        self.__dto_model = TransactionIdsModel
+        self.__engine = engine
+        self.__rrn = rrn
 
     def insertRecord(self, obj: dict) -> None:
         new_record = None
 
-        self.dto_model(**obj)
+        self.__dto_model(**obj)
 
-        loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.INSERT_RECORD} - Start Insert Transaction ID Record {obj}")
+        loggerOutput(rrn=self.__rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.INSERT_RECORD} - Start Insert Transaction ID Record {obj}")
 
-        with self.engine.connect() as conn:
-            new_record = self.dto_model(**obj).model_dump()
+        with self.__engine.connect() as conn:
+            new_record = self.__dto_model(**obj).model_dump()
 
             insert_statement = transaction_ids\
                 .insert()\
@@ -54,13 +54,13 @@ class TransactionIdsCore:
             conn.execute(insert_statement)
             conn.commit()
         
-        loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.INSERT_RECORD} - Done Insert Transaction ID Record {obj}")
+        loggerOutput(rrn=self.__rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.INSERT_RECORD} - Done Insert Transaction ID Record {obj}")
     
     def selectRecord(self, month: int, year: int, id: str) -> dict:
         validator = None
         result = None
 
-        loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORD} - Start Select Record")
+        loggerOutput(rrn=self.__rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORD} - Start Select Record")
 
         ti_obj = TransactionIdsModel(
             month=month,
@@ -68,7 +68,7 @@ class TransactionIdsCore:
             id=id
         ).model_dump()
         
-        with self.engine.connect() as conn:
+        with self.__engine.connect() as conn:
             validator = transaction_ids\
                 .select()\
                 .where(
@@ -81,18 +81,18 @@ class TransactionIdsCore:
         result = result.first()
         if result is not None:
             result = dict(result._mapping)
-            result = self.dto_model(**result).model_dump()
+            result = self.__dto_model(**result).model_dump()
             result = DataModel(data=result).model_dump()
-            loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORD} - {result}")
+            loggerOutput(rrn=self.__rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORD} - {result}")
         return result
     
     def selectCurrentId(self, month: int, year: int) -> dict:
         validator = None
         result = None
 
-        loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORD} - Start Select Record")
+        loggerOutput(rrn=self.__rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORD} - Start Select Record")
 
-        with self.engine.connect() as conn:
+        with self.__engine.connect() as conn:
             validator = transaction_ids\
                 .select()\
                 .where(
@@ -108,9 +108,9 @@ class TransactionIdsCore:
         result = result.first()
         if result is not None:
             result = dict(result._mapping)
-            result = self.dto_model(**result).model_dump()
+            result = self.__dto_model(**result).model_dump()
             result = DataModel(data=result).model_dump()
-            loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORD} - {result}")
+            loggerOutput(rrn=self.__rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORD} - {result}")
         return result
     
     def parseTransactionId(self, transaction_id: str) -> dict:
@@ -119,7 +119,7 @@ class TransactionIdsCore:
             if not isinstance(transaction_id, str):
                 raise Exception()
             if re.search(r"^\d{4}\d{2}\-\d{5}\Z", transaction_id):
-                result = self.dto_model(
+                result = self.__dto_model(
                     year=int(transaction_id[:4]),
                     month=int(transaction_id[4:6]),
                     id=str(transaction_id[7:12])
@@ -129,7 +129,7 @@ class TransactionIdsCore:
                 raise Exception(error)
         except Exception as err:
             loggerOutput(
-                rrn=self.rrn,
+                rrn=self.__rrn,
                 message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.PARSE_TRNASCTION_ID} - {err}"
             )
         finally:
@@ -139,9 +139,9 @@ class TransactionIdsCore:
         validator = None
         result = None
 
-        loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORDS_BY_MONTH_YEAR} - Start Select Record By Month & Year")
+        loggerOutput(rrn=self.__rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORDS_BY_MONTH_YEAR} - Start Select Record By Month & Year")
 
-        with self.engine.connect() as conn:
+        with self.__engine.connect() as conn:
             validator = transaction_ids\
                 .select()\
                 .where(
@@ -153,9 +153,9 @@ class TransactionIdsCore:
         result = result.all()
         result = [row._asdict() for row in result]
         if len(result) > 0:
-            result = [self.dto_model(**data).model_dump() for data in result]
+            result = [self.__dto_model(**data).model_dump() for data in result]
             result = DataModel(data=result).model_dump()
-            loggerOutput(rrn=self.rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORDS_BY_MONTH_YEAR} - {result}")
+            loggerOutput(rrn=self.__rrn, message=f"{ti_core_meta.TRANSACTION_IDS_CORE}.{ti_core_meta.SELECT_RECORDS_BY_MONTH_YEAR} - {result}")
         return result
         
 

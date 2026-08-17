@@ -6,28 +6,28 @@ from sqlalchemy import create_engine, text
 class DbSiloCheckClient(ABC):
 
     def __init__(self, creds: dict = None):
-        self.credentials = creds
-        self.engine = None
-        self.command = None
-        self.data = None
-        self.result = None
+        self.__credentials = creds
+        self._engine = None
+        self.__command = None
+        self.__data = None
+        self.__result = None
 
     @abstractmethod
     def connect(self):
         pass
 
     def setCommand(self, sql_command: str):
-        self.command = sql_command
+        self.__command = sql_command
 
         return self
     
     def execute(self, params: dict = None):
-        engine = self.engine
+        engine = self._engine
         parameters = {} if params is None else copy.deepcopy(params)
 
         with engine.connect() as conn:
-            self.result = conn.execute(
-                text(self.command),
+            self.__result = conn.execute(
+                text(self.__command),
                 parameters
             )
         
@@ -35,13 +35,11 @@ class DbSiloCheckClient(ABC):
     
     def getData(self, result_type: str = "pandas"):
         if result_type == "pandas":
-            self.data = pd.DataFrame(
-                self.result,
-                columns=self.result.keys()
+            self.__data = pd.DataFrame(
+                self.__result,
+                columns=self.__result.keys()
             )
         if result_type == "dict":
-            self.data = self.result.mappings().all()
-        return self.data
+            self.__data = self.__result.mappings().all()
+        return self.__data
     
-    def store(self):
-        pass

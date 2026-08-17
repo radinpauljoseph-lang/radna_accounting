@@ -59,10 +59,10 @@ jv_core_meta = JournalVoucherCoreMetaData()
 
 class JournalVoucherCore:
     def __init__(self, rrn = None) -> None:
-        self.dto_model = JournalVoucherModel
-        self.history_model = JournalVoucherHistoryModel
-        self.engine = engine
-        self.rrn = rrn
+        self.__dto_model = JournalVoucherModel
+        self.__history_model = JournalVoucherHistoryModel
+        self.__engine = engine
+        self.__rrn = rrn
 
     def generateDocumentContent(self, transaction_id: str, content: dict) -> dict:
         data = None
@@ -104,14 +104,14 @@ class JournalVoucherCore:
         new_record = None
         history_record = None
 
-        with self.engine.connect() as conn:
+        with self.__engine.connect() as conn:
             doc_data = self.generateDocumentContent(transaction_id, obj)
             doc_name = doc_data[jv_data_content_meta.ID]
             doc_data = self.generateDocument(doc_data)
 
             loggerOutput(
                 message="START",
-                rrn=self.rrn
+                rrn=self.__rrn
             )
             temp = {
                 "id": uuid4(),
@@ -120,7 +120,7 @@ class JournalVoucherCore:
                 "document_path": f"{JOURNAL_VOUCHER_FOLDER_PATH}\\{JOURNAL_VOUCHER_FOLDER_NAME}\\{COMPANY_NAME}",
                 "document_file_type": JOURNAL_VOUCHER_FILE_TYPE
             }
-            new_record = self.dto_model(
+            new_record = self.__dto_model(
                 id=uuid4(),
                 transaction_id=transaction_id,
                 document_name=doc_name,
@@ -132,18 +132,18 @@ class JournalVoucherCore:
             ).model_dump()
             loggerOutput(
                 message="START 2",
-                rrn=self.rrn
+                rrn=self.__rrn
             )
             new_record[jv_meta.CREATED_DATE] = datetime.now()
             new_record[jv_meta.UPDATED_DATE] = new_record[jv_meta.CREATED_DATE]
 
             history_record = copy.deepcopy(new_record)
             history_record[jv_meta.HISTORY_OPERATION] = "I"
-            history_record = self.history_model(**history_record).model_dump()
+            history_record = self.__history_model(**history_record).model_dump()
 
             loggerOutput(
                 message="START 3",
-                rrn=self.rrn
+                rrn=self.__rrn
             )
             insert_statement = journal_voucher\
                 .insert()\
@@ -156,7 +156,7 @@ class JournalVoucherCore:
             conn.execute(history_insert_statement)
             loggerOutput(
                 message="START 4",
-                rrn=self.rrn
+                rrn=self.__rrn
             )
             conn.commit()
 
@@ -164,8 +164,8 @@ class JournalVoucherCore:
         validator = None
         result = []
 
-        loggerOutput(rrn=self.rrn, message=f"{jv_core_meta.JOURNAL_VOUCHER_CORE}.{jv_core_meta.SELECT_RECORD_BY_TRANSACTION_ID} - Start Select Record By Transaction ID")
-        with self.engine.connect() as conn:
+        loggerOutput(rrn=self.__rrn, message=f"{jv_core_meta.JOURNAL_VOUCHER_CORE}.{jv_core_meta.SELECT_RECORD_BY_TRANSACTION_ID} - Start Select Record By Transaction ID")
+        with self.__engine.connect() as conn:
             validator = journal_voucher\
                 .select()\
                 .where(journal_voucher.c.transaction_id == transaction_id)
@@ -174,11 +174,11 @@ class JournalVoucherCore:
         result = result.all()
         result = [row._asdict() for row in result]
         if len(result) > 0:
-            result = [self.dto_model(**data).model_dump() for data in result]
+            result = [self.__dto_model(**data).model_dump() for data in result]
             result = DataModel(data=result).model_dump()
-            loggerOutput(rrn=self.rrn, message=f"{jv_core_meta.JOURNAL_VOUCHER_CORE}.{jv_core_meta.SELECT_RECORD_BY_TRANSACTION_ID} - {result}")
+            loggerOutput(rrn=self.__rrn, message=f"{jv_core_meta.JOURNAL_VOUCHER_CORE}.{jv_core_meta.SELECT_RECORD_BY_TRANSACTION_ID} - {result}")
         
-        loggerOutput(rrn=self.rrn, message=f"{jv_core_meta.JOURNAL_VOUCHER_CORE}.{jv_core_meta.SELECT_RECORD_BY_TRANSACTION_ID} - Done Select Record By Transaction ID")
+        loggerOutput(rrn=self.__rrn, message=f"{jv_core_meta.JOURNAL_VOUCHER_CORE}.{jv_core_meta.SELECT_RECORD_BY_TRANSACTION_ID} - Done Select Record By Transaction ID")
         return result
     
     def updateRecord(self, obj: dict) -> None:

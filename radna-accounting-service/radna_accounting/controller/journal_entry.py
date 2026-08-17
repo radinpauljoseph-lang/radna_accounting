@@ -49,28 +49,28 @@ class JournalEntryControllerMetaData:
 je_controller_meta = JournalEntryControllerMetaData()
 class JournalEntryController:
     def __init__(self, rrn = None):
-        self.validator_model = JournalEntryModel
-        self.core_model = JournalEntryCore
-        self.coa_core_model = ChartOfAccountsCore
-        self.ti_core_model = TransactionIdsCore
-        self.acp_core_model = AccountingPeriodsCore
-        self.rrn = rrn
+        self.__validator_model = JournalEntryModel
+        self.__core_model = JournalEntryCore
+        self.__coa_core_model = ChartOfAccountsCore
+        self.__ti_core_model = TransactionIdsCore
+        self.__acp_core_model = AccountingPeriodsCore
+        self.__rrn = rrn
 
     @catchAndLog(Exception)
     def createJournalEntry(self, obj) -> dict:
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.CREATE_JOURNAL_ENTRY} - Start Creating Journal Entry")
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.CREATE_JOURNAL_ENTRY} - Start Creating Journal Entry")
         return_data = {}
         je_obj = copy.deepcopy(obj)
         je_obj[je_meta.STATUS] = je_status.NEW
         je_obj[je_meta.POSTING_DATE] = None
 
-        je_obj = self.validator_model(**je_obj)
+        je_obj = self.__validator_model(**je_obj)
         je_obj = je_obj.model_dump()
 
-        core_model = self.core_model(self.rrn)
-        coa_core_model = self.coa_core_model(self.rrn)
-        ti_core_model = self.ti_core_model(self.rrn)
-        acp_core_model = self.acp_core_model(self.rrn)
+        core_model = self.__core_model(self.__rrn)
+        coa_core_model = self.__coa_core_model(self.__rrn)
+        ti_core_model = self.__ti_core_model(self.__rrn)
+        acp_core_model = self.__acp_core_model(self.__rrn)
         
         account_number_exists = coa_core_model.selectRecordById(
             je_obj[je_meta.ACCOUNT_NUMBER]
@@ -149,51 +149,51 @@ class JournalEntryController:
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0102"))
             raise Exception(error)
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.CREATE_JOURNAL_ENTRY} - Done Creating Journal Entry")
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.CREATE_JOURNAL_ENTRY} - Done Creating Journal Entry")
         return return_data
     
     @catchAndLog(Exception)
     def getJournalEntry(self, id: str) -> dict:
         return_data = {}
-        core_model = self.core_model(self.rrn)
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Start Get Journal Entry Record")  
+        core_model = self.__core_model(self.__rrn)
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Start Get Journal Entry Record")  
         record = core_model.selectRecordById(id)
         if record is not None:
             return_data = record
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0026"))
             raise Exception(error)
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Done Get Journal Entry Record")  
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Done Get Journal Entry Record")  
         return return_data
 
     @catchAndLog(Exception)
     def getJournalEntryByTransactionId(self, transaction_id: str) -> dict:
         return_data = {}
-        core_model = self.core_model(self.rrn)
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Start Get Journal Entry Record By Transaction ID")  
+        core_model = self.__core_model(self.__rrn)
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Start Get Journal Entry Record By Transaction ID")  
         record = core_model.selectRecordByTransactionId(transaction_id)
         if record is not None:
             return_data = record
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0028"))
             raise Exception(error)
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Done Get Journal Entry Record By Transaction ID")  
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Done Get Journal Entry Record By Transaction ID")  
         return return_data
     
     @catchAndLog(Exception)
     def getTransactionIdCreditDebitAmount(self, transaction_id: str) -> dict:
         return_data = {}
-        core_model = self.core_model(self.rrn)
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Start Get Transaction ID Credit & Debit Amount: {transaction_id}")  
+        core_model = self.__core_model(self.__rrn)
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Start Get Transaction ID Credit & Debit Amount: {transaction_id}")  
         return_data = core_model.getTransactionIdAmount(transaction_id)
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Done Get Transaction ID Credit & Debit Amount: {transaction_id}")  
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.GET_JOURNAL_ENTRY} - Done Get Transaction ID Credit & Debit Amount: {transaction_id}")  
         return return_data
     
     @catchAndLog(Exception)
     def setTransactionIdForReview(self, transaction_id: str) -> dict:
         return_data = {}
         valid_statuses = [je_status.NEW, je_status.REJECTED]
-        core_model = self.core_model(self.rrn)
+        core_model = self.__core_model(self.__rrn)
         error_details = []
         counter = core_model.getTransactionIdAmount(transaction_id)
 
@@ -226,7 +226,7 @@ class JournalEntryController:
                     error_details.append(error[MESSAGE_KEY])
                 else:
                     loggerOutput(
-                        rrn=self.rrn,
+                        rrn=self.__rrn,
                         message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.SET_TRANSACTION_ID_FOR_REVIEW} No issue with Journal Entries"
                     )
 
@@ -240,7 +240,7 @@ class JournalEntryController:
             else:
                 error = copy.deepcopy(error_map.get(f"{JNE_CODE}0104"))
                 loggerOutput(
-                    rrn=self.rrn,
+                    rrn=self.__rrn,
                     message=f"{error}"
                 )
                 error[DETAILS_KEY] = error_details
@@ -253,7 +253,7 @@ class JournalEntryController:
 
     @catchAndLog(Exception)
     def updateJournalEntry(self, id: str, obj: dict) -> dict:
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.UPDATE_JOURNAL_ENTRY} - Start Updating Journal Entry")
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.UPDATE_JOURNAL_ENTRY} - Start Updating Journal Entry")
         return_data = {}
         allowed_fields = [
             je_meta.CURRENCY_CODE,
@@ -263,8 +263,8 @@ class JournalEntryController:
             je_meta.AMOUNT
         ]
         valid_statuses = [je_status.NEW, je_status.REJECTED]
-        core_model = self.core_model(self.rrn)
-        coa_core_model = self.coa_core_model(self.rrn)
+        core_model = self.__core_model(self.__rrn)
+        coa_core_model = self.__coa_core_model(self.__rrn)
 
         je_id_exists = core_model.selectRecordById(id)
 
@@ -295,7 +295,7 @@ class JournalEntryController:
         temp_obj[je_meta.STATUS] = data[je_meta.STATUS]
         temp_obj[je_meta.TRANSACTION_ID] = data[je_meta.TRANSACTION_ID]
         temp_obj[je_meta.TRANSACTION_DATE] = data[je_meta.TRANSACTION_DATE]
-        je_obj = self.validator_model(**temp_obj)
+        je_obj = self.__validator_model(**temp_obj)
         je_obj = je_obj.model_dump()
 
         account_number_exists = coa_core_model.selectRecordById(
@@ -313,16 +313,16 @@ class JournalEntryController:
         record = core_model.selectRecordById(id)
         return_data = record
 
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.UPDATE_JOURNAL_ENTRY} - Done Updating Journal Entry")
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.UPDATE_JOURNAL_ENTRY} - Done Updating Journal Entry")
 
         return return_data
     
     @catchAndLog(Exception)
     def deleteJournalEntry(self, id: str):
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.DELETE_JOURNAL_ENTRY} - Start Delete Journal Entry")
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.DELETE_JOURNAL_ENTRY} - Start Delete Journal Entry")
         return_data = {}
         valid_statuses = [je_status.NEW, je_status.REJECTED]
-        core_model = self.core_model(self.rrn)
+        core_model = self.__core_model(self.__rrn)
 
         je_id_exists = core_model.selectRecordById(id)
                 
@@ -343,15 +343,15 @@ class JournalEntryController:
         core_model.deleteRecordById(id)
         return_data = data
 
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.DELETE_JOURNAL_ENTRY} - Done Delete Journal Entry")
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.DELETE_JOURNAL_ENTRY} - Done Delete Journal Entry")
 
         return return_data
     
     @catchAndLog(Exception)
     def approveJournalEntryByTransactionId(self, transaction_id: str) -> dict:
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.APPROVE_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Start Approving Journal Entry By Transaction ID")
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.APPROVE_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Start Approving Journal Entry By Transaction ID")
         return_data = {}
-        core_model = self.core_model(rrn=self.rrn)
+        core_model = self.__core_model(rrn=self.__rrn)
         valid_statuses = [je_status.FOR_REVIEW]
         error_details = []
         query_result = core_model.selectRecordByTransactionId(transaction_id)
@@ -378,7 +378,7 @@ class JournalEntryController:
                 error_details.append(error[MESSAGE_KEY])
             else:
                 loggerOutput(
-                    rrn=self.rrn,
+                    rrn=self.__rrn,
                     message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.APPROVE_JOURNAL_ENTRY_BY_TRANSACTION_ID} No issue with Journal Entries"
                 )
 
@@ -392,7 +392,7 @@ class JournalEntryController:
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0113"))
             loggerOutput(
-                rrn=self.rrn,
+                rrn=self.__rrn,
                 message=f"{error}"
             )
             error[DETAILS_KEY] = error_details
@@ -402,9 +402,9 @@ class JournalEntryController:
 
     @catchAndLog(Exception)
     def rejectJournalEntryByTransactionId(self, transaction_id: str) -> dict:
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.REJECT_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Start Rejecting Journal Entry By Transaction ID")
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.REJECT_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Start Rejecting Journal Entry By Transaction ID")
         return_data = {}
-        core_model = self.core_model(rrn=self.rrn)
+        core_model = self.__core_model(rrn=self.__rrn)
         valid_statuses = [je_status.FOR_REVIEW]
         error_details = []
         query_result = core_model.selectRecordByTransactionId(transaction_id)
@@ -431,7 +431,7 @@ class JournalEntryController:
                 error_details.append(error[MESSAGE_KEY])
             else:
                 loggerOutput(
-                    rrn=self.rrn,
+                    rrn=self.__rrn,
                     message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.REJECT_JOURNAL_ENTRY_BY_TRANSACTION_ID} No issue with Journal Entries"
                 )
 
@@ -445,7 +445,7 @@ class JournalEntryController:
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0116"))
             loggerOutput(
-                rrn=self.rrn,
+                rrn=self.__rrn,
                 message=f"{error}"
             )
             error[DETAILS_KEY] = error_details
@@ -455,9 +455,9 @@ class JournalEntryController:
     
     @catchAndLog(Exception)
     def postJournalEntryByTransactionId(self, transaction_id: str) -> dict:
-        loggerOutput(rrn=self.rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.POST_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Start Posting Journal Entry By Transaction ID")
+        loggerOutput(rrn=self.__rrn, message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.POST_JOURNAL_ENTRY_BY_TRANSACTION_ID} - Start Posting Journal Entry By Transaction ID")
         return_data = {}
-        core_model = self.core_model(rrn=self.rrn)
+        core_model = self.__core_model(rrn=self.__rrn)
         valid_statuses = [je_status.APPROVED]
         error_details = []
         query_result = core_model.selectRecordByTransactionId(transaction_id)
@@ -484,7 +484,7 @@ class JournalEntryController:
                 error_details.append(error[MESSAGE_KEY])
             else:
                 loggerOutput(
-                    rrn=self.rrn,
+                    rrn=self.__rrn,
                     message=f"{je_controller_meta.JOURNAL_ENTRY_CONTROLLER}.{je_controller_meta.POST_JOURNAL_ENTRY_BY_TRANSACTION_ID} No issue with Journal Entries"
                 )
 
@@ -495,7 +495,7 @@ class JournalEntryController:
         else:
             error = copy.deepcopy(error_map.get(f"{JNE_CODE}0119"))
             loggerOutput(
-                rrn=self.rrn,
+                rrn=self.__rrn,
                 message=f"{error}"
             )
             error[DETAILS_KEY] = error_details

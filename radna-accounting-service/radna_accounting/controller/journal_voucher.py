@@ -38,22 +38,21 @@ jv_controller_meta = JournalEntryControllerMetaData()
 
 class JournalVoucherController:
     def __init__(self, rrn = None):
-        self.validator_model = JournalVoucherModel
-        self.engine = engine
-        self.core_model = JournalVoucherCore
-        self.coa_core_model = ChartOfAccountsCore
-        self.je_core_model = JournalEntryCore
-        self.rrn = rrn
+        self.__validator_model = JournalVoucherModel
+        self.__core_model = JournalVoucherCore
+        self.__coa_core_model = ChartOfAccountsCore
+        self.__je_core_model = JournalEntryCore
+        self.__rrn = rrn
 
     @catchAndLog(Exception)
     def createJournalVoucher(self, transaction_id: str) -> dict:
-        loggerOutput(rrn=self.rrn, message=f"{jv_controller_meta.JOURNAL_VOUCHER_CONTROLLER}.{jv_controller_meta.CREATE_JOURNAL_VOUCHER} - Start Creating Journal Voucher")
+        loggerOutput(rrn=self.__rrn, message=f"{jv_controller_meta.JOURNAL_VOUCHER_CONTROLLER}.{jv_controller_meta.CREATE_JOURNAL_VOUCHER} - Start Creating Journal Voucher")
         return_data = {}
         ACCOUNT_NAME = 'account_name'
 
-        core_model = self.core_model()
-        je_core_model = self.je_core_model(rrn=self.rrn)
-        coa_core_model = self.coa_core_model(rrn=self.rrn)
+        core_model = self.__core_model()
+        je_core_model = self.__je_core_model(rrn=self.__rrn)
+        coa_core_model = self.__coa_core_model(rrn=self.__rrn)
 
         journal_entries = je_core_model.selectRecordByTransactionId(transaction_id)
         
@@ -93,12 +92,12 @@ class JournalVoucherController:
         
         record = core_model.selectRecordByTransactionId(transaction_id)
         return_data = record
-        loggerOutput(rrn=self.rrn, message=f"{jv_controller_meta.JOURNAL_VOUCHER_CONTROLLER}.{jv_controller_meta.CREATE_JOURNAL_VOUCHER} - Done Creating Journal Voucher")
+        loggerOutput(rrn=self.__rrn, message=f"{jv_controller_meta.JOURNAL_VOUCHER_CONTROLLER}.{jv_controller_meta.CREATE_JOURNAL_VOUCHER} - Done Creating Journal Voucher")
         return return_data
     
     @catchAndLog(Exception)
     def downloadJournalVoucherFile(self, transaction_id):
-        core_model = self.core_model()
+        core_model = self.__core_model()
         result = core_model.selectRecordByTransactionId(transaction_id)
         result = result[DATA_KEY]
         if len(result) == 0:
