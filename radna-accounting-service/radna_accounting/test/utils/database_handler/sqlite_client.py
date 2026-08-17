@@ -10,13 +10,13 @@ class SQLiteClient(DbSiloCheckClient):
 
     def __init__(self, creds: dict = None):
         super().__init__(creds)
-        self.credentials = self.credentials if creds is None else\
+        self.__credentials = self.__credentials if creds is None else\
             sqliteUrlConvert(creds)
 
     def connect(self, creds=None):
-        self.credentials = self.credentials if creds is None else\
+        self.__credentials = self.__credentials if creds is None else\
             sqliteUrlConvert(creds)
-        self.engine = create_engine(self.credentials)
+        self._engine = create_engine(self.__credentials)
 
         return self
     

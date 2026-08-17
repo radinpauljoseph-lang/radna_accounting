@@ -40,23 +40,23 @@ acp_controller_meta = AccountingPeriodsControllerMetaData()
 
 class AccountingPeriodsController:
     def __init__(self, rrn = None):
-        self.validator_model = AccountingPeriodsModel
-        self.core_model = AccountingPeriodsCore
-        self.je_core_model = JournalEntryCore
-        self.ti_core_model = TransactionIdsCore
-        self.rrn = rrn
+        self.__validator_model = AccountingPeriodsModel
+        self.__core_model = AccountingPeriodsCore
+        self.__je_core_model = JournalEntryCore
+        self.__ti_core_model = TransactionIdsCore
+        self.__rrn = rrn
 
     @catchAndLog(Exception)
     def createAccountingPeriod(self, obj) -> dict:
-        loggerOutput(rrn=self.rrn, message=f"{acp_controller_meta.ACCOUNTING_PERIODS_CONTROLLER}.{acp_controller_meta.CREATE_ACCOUNTING_PERIOD} - Start Creating Accounting Period")
+        loggerOutput(rrn=self.__rrn, message=f"{acp_controller_meta.ACCOUNTING_PERIODS_CONTROLLER}.{acp_controller_meta.CREATE_ACCOUNTING_PERIOD} - Start Creating Accounting Period")
         return_data = {}
         acp_obj = copy.deepcopy(obj)
         acp_obj[acp_meta.STATUS] = acp_status.OPEN
 
-        acp_obj = self.validator_model(**acp_obj)
+        acp_obj = self.__validator_model(**acp_obj)
 
-        core_model = self.core_model(self.rrn)
-        ti_core_model = self.ti_core_model(self.rrn)
+        core_model = self.__core_model(self.__rrn)
+        ti_core_model = self.__ti_core_model(self.__rrn)
             
         accounting_period_exists = core_model.selectRecord(
             month=acp_obj.month,
@@ -81,19 +81,19 @@ class AccountingPeriodsController:
         )
         return_data = record
 
-        loggerOutput(rrn=self.rrn, message=f"{acp_controller_meta.ACCOUNTING_PERIODS_CONTROLLER}.{acp_controller_meta.CREATE_ACCOUNTING_PERIOD} - Done Creating Accounting Period")
+        loggerOutput(rrn=self.__rrn, message=f"{acp_controller_meta.ACCOUNTING_PERIODS_CONTROLLER}.{acp_controller_meta.CREATE_ACCOUNTING_PERIOD} - Done Creating Accounting Period")
         return return_data
     
     @catchAndLog(Exception)
     def closeAccountingPeriod(self, obj: dict) -> dict:
         return_data = {}
         temp_obj = copy.deepcopy(obj)
-        acp_obj = self.validator_model(
+        acp_obj = self.__validator_model(
             month=temp_obj[acp_meta.MONTH],
             year=temp_obj[acp_meta.YEAR]
         ).model_dump()
-        core_model = self.core_model(rrn=self.rrn)
-        je_core_model = self.je_core_model(rrn=self.rrn)
+        core_model = self.__core_model(rrn=self.__rrn)
+        je_core_model = self.__je_core_model(rrn=self.__rrn)
 
         data = core_model.selectRecord(
             month=acp_obj[acp_meta.MONTH],
@@ -131,7 +131,7 @@ class AccountingPeriodsController:
         )
         return_data = record
 
-        loggerOutput(rrn=self.rrn, message=f"{acp_controller_meta.ACCOUNTING_PERIODS_CONTROLLER}.{acp_controller_meta.CREATE_ACCOUNTING_PERIOD} - Done Creating Accounting Period")
+        loggerOutput(rrn=self.__rrn, message=f"{acp_controller_meta.ACCOUNTING_PERIODS_CONTROLLER}.{acp_controller_meta.CREATE_ACCOUNTING_PERIOD} - Done Creating Accounting Period")
         return return_data
 
                     

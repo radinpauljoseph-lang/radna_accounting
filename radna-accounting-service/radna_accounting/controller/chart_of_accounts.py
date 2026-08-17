@@ -27,16 +27,16 @@ coa_controller_meta = ChartOfAccountsControllerMetaData()
 
 class ChartOfAccountsController:
     def __init__(self, rrn = None):
-        self.validator_model = ChartOfAccountsModel
-        self.core_model = ChartOfAccountsCore
-        self.rrn = rrn
+        self.__validator_model = ChartOfAccountsModel
+        self.__core_model = ChartOfAccountsCore
+        self.__rrn = rrn
 
     @catchAndLog(Exception)
     def createAccount(self, obj: dict) -> dict:
-        loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.CREATE_ACCOUNT} - Start Creating Account")
+        loggerOutput(rrn=self.__rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.CREATE_ACCOUNT} - Start Creating Account")
         return_data = {}
-        account_obj = self.validator_model(**obj)
-        core_model = self.core_model(self.rrn)
+        account_obj = self.__validator_model(**obj)
+        core_model = self.__core_model(self.__rrn)
         
         account_id_exists = core_model.selectRecordById(account_obj.account_id)
         account_name_exists = core_model.selectRecordByName(account_obj.name)
@@ -68,7 +68,7 @@ class ChartOfAccountsController:
                 )
                 raise Exception(error)
             
-        loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.CREATE_ACCOUNT} - Done Creating Account")
+        loggerOutput(rrn=self.__rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.CREATE_ACCOUNT} - Done Creating Account")
         return return_data
     
     @catchAndLog(Exception)
@@ -81,14 +81,14 @@ class ChartOfAccountsController:
             coa_meta.ACCOUNT_MAPPING
         ]
 
-        loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.UPDATE_ACCOUNT} - Start Updating Account")  
-        core_model = self.core_model(self.rrn)
+        loggerOutput(rrn=self.__rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.UPDATE_ACCOUNT} - Start Updating Account")  
+        core_model = self.__core_model(self.__rrn)
 
         account_id_exists = core_model.selectRecordById(id)
         if account_id_exists:
             temp_obj = copy.deepcopy(obj)
             temp_obj[coa_meta.ACCOUNT_ID] = id
-            account_obj = self.validator_model(**temp_obj).model_dump()
+            account_obj = self.__validator_model(**temp_obj).model_dump()
 
             record = copy.deepcopy(account_id_exists[DATA_KEY])
             record[coa_meta.ACCOUNT_MAPPING] = account_obj[coa_meta.ACCOUNT_MAPPING]
@@ -122,11 +122,11 @@ class ChartOfAccountsController:
                 if key in allowed_fields:
                     record[key] = account_obj[key]
 
-            record = self.validator_model(**record)
+            record = self.__validator_model(**record)
             core_model.updateRecordById(id, record)
             record = core_model.selectRecordById(id)
             return_data = record
-            loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.UPDATE_ACCOUNT} - {return_data}")
+            loggerOutput(rrn=self.__rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.UPDATE_ACCOUNT} - {return_data}")
         else:
             error = copy.deepcopy(error_map.get(f"{COA_CODE}0101"))
             error[MESSAGE_KEY] = error[MESSAGE_KEY].format(
@@ -138,8 +138,8 @@ class ChartOfAccountsController:
     @catchAndLog(Exception)
     def getAccount(self, id: str) -> dict:
         return_data = {}
-        core_model = self.core_model(self.rrn)
-        loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.GET_ACCOUNT} - Start Get Account")  
+        core_model = self.__core_model(self.__rrn)
+        loggerOutput(rrn=self.__rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.GET_ACCOUNT} - Start Get Account")  
         record = core_model.selectRecordById(id)
         if record is not None:
             return_data = record
@@ -149,7 +149,7 @@ class ChartOfAccountsController:
                 account_id=id
             )
             raise Exception(error)
-        loggerOutput(rrn=self.rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.GET_ACCOUNT} - Done Get Account")  
+        loggerOutput(rrn=self.__rrn, message=f"{coa_controller_meta.CHART_OF_ACCOUNTS_CONTROLLER}.{coa_controller_meta.GET_ACCOUNT} - Done Get Account")  
         return return_data
 
         
